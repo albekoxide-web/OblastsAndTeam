@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Oblasts & Team Mobile Edition</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #2c3e50; font-family: sans-serif; touch-action: none; }
+        #lobby { position: absolute; inset: 0; background: #1a2a6c; display: flex; align-items: center; justify-content: center; z-index: 1000; color: white; }
+        .window { background: rgba(0,0,0,0.7); padding: 20px; border-radius: 15px; text-align: center; width: 85%; max-width: 300px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+        #gui { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 10px; display: none; font-size: 14px; pointer-events: none; }
+        
+        /* Кнопки для телефону */
+        #mobile-controls { position: absolute; bottom: 20px; right: 20px; display: none; gap: 10px; }
+        .m-btn { width: 60px; height: 60px; background: rgba(255,255,255,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: black; border: 2px solid white; pointer-events: auto; }
+        
+        /* Джойстик */
+        #joystick-base { position: absolute; bottom: 40px; left: 40px; width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%; display: none; }
+        #joystick-stick { position: absolute; top: 25px; left: 25px; width: 50px; height: 50px; background: white; border-radius: 50%; }
+        
+        canvas { display: block; background: #fff; }
+    </style>
+</head>
+<body>
+
+<div id="lobby">
+    <div class="window">
+        <h2>Oblasts & Team</h2>
+        <input type="text" id="nick" placeholder="Твій Нік">
+        <button style="background: #27ae60; color: white;" onclick="setupGame('create')">СТВОРИТИ ГРУ</button>
+        <input type="text" id="roomCode" placeholder="Код кімнати">
+        <button style="background: #2980b9; color: white;" onclick="setupGame('join')">ПРИЄДНАТИСЯ</button>
+    </div>
+</div>
+
+<div id="gui">
+    <b>Кімната: <span id="curRoom"></span></b><br>
+    🌲 Дерево: <span id="r_wood">0</span> | 👥 Люди: <span id="r_pop">0</span>
+</div>
+
+<div id="mobile-controls">
+    <div class="m-btn" onclick="action('flag')">🚩</div>
+    <div class="m-btn" onclick="action('house')">🏠</div>
+</div>
+
+<div id="joystick-base"><div id="joystick-stick"></div></div>
+
+<canvas id="game"></canvas>
+
+<script src="https://gstatic.com"></script>
+<script src="https://gstatic.com"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
+  authDomain: "://firebaseapp.com",
+  databaseURL: "https://firebasedatabase.app",
+  projectId: "oblastandteam",
+  storageBucket: "oblastandteam.firebasestorage.app",
+  messagingSenderId: "1070668055977",
+  appId: "1:1070668055977:web:01886461edd6a9cedf30b8"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let player = { x: 500, y: 500, wood: 200, pop: 1, nick: "", color: "" };
+let players = {}, flags = {}, buildings = {}, roomID = "";
+let joystick = { active: false, x: 0, y: 0 };
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+function setupGame(mode) {
+    const nick = document.getElementById('nick').value;
+    let code = document.getElementById('roomCode').value.toUpperCase();
+    if (!nick) return alert("Введи нік!");
+
+    if (mode === 'create') {
+        code = Math.random().toString(36).substring(2, 6).toUpperCase();
+        alert("Код для друга: " + code);
+    } else if (!code) return alert("Введи код!");
+
+    roomID = code;
+    player.nick = nick;
+    player.color = `hsl(${Math.random()*360}, 70%, 50%)`;
+
+    document.getElementById('lobby').style.display = 'none';
+    document.getElementById('gui').style.display = 'block';
+    document.getElementById('mobile-controls').style.display = 'flex';
+    document.getElementById('joystick-base').style.display = 'block';
+    document.getElementById('curRoom').innerText = roomID;
+    
+    startNetwork();
+}
+
+function startNetwork() {
+    const rRef = db.ref('rooms/' + roomID);
+    rRef.child('players/' + player.nick).onDisconnect().remove();
+    rRef.child('players').on('value', s => players = s.val() || {});
+    rRef.child('flags').on('value', s => flags = s.val() || {});
+    rRef.child('buildings').on('value', s => buildings = s.val() || {});
+    requestAnimationFrame(update);
+}
+
+// Дії (кнопки телефону)
+function action(type) {
+    if(type === 'flag' && player.wood >= 50) {
+        db.ref('rooms/'+roomID+'/flags/'+Date.now()).set({x: player.x, y: player.y, color: player.color});
+        player.wood -= 50;
+    }
+    if(type === 'house' && player.wood >= 100) {
+        db.ref('rooms/'+roomID+'/buildings/'+Date.now()).set({x: player.x, y: player.y, color: player.color});
+        player.wood -= 100; player.pop += 5;
+    }
+}
+
+// Простий джойстик
+const jBase = document.getElementById('joystick-base');
+const jStick = document.getElementById('joystick-stick');
+
+jBase.addEventListener('touchstart', e => { joystick.active = true; });
+window.addEventListener('touchend', () => { 
+    joystick.active = false; 
+    jStick.style.transform = `translate(0px, 0px)`;
+    joystick.x = 0; joystick.y = 0;
+});
+window.addEventListener('touchmove', e => {
+    if(!joystick.active) return;
+    let touch = e.touches[0];
+    let rect = jBase.getBoundingClientRect();
+    let dx = touch.clientX - (rect.left + 50);
+    let dy = touch.clientY - (rect.top + 50);
+    let dist = Math.min(Math.hypot(dx, dy), 40);
+    let angle = Math.atan2(dy, dx);
+    joystick.x = Math.cos(angle) * (dist / 40);
+    joystick.y = Math.sin(angle) * (dist / 40);
+    jStick.style.transform = `translate(${joystick.x*40}px, ${joystick.y*40}px)`;
+});
+
+function update() {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    
+    // Рух через джойстик
+    if(joystick.active) {
+        player.x += joystick.x * 6;
+        player.y += joystick.y * 6;
+        db.ref('rooms/' + roomID + '/players/' + player.nick).set(player);
+    }
+
+    ctx.save();
+    ctx.translate(canvas.width/2 - player.x, canvas.height/2 - player.y);
+
+    for(let id in flags) {
+        let f = flags[id]; ctx.fillStyle = f.color.replace('50%)', '15%)');
+        ctx.fillRect(f.x-100, f.y-100, 200, 200);
+    }
+    for(let id in buildings) {
+        let b = buildings[id]; ctx.fillStyle = "#8e44ad"; ctx.fillRect(b.x-20, b.y-20, 40, 40);
+    }
+    for(let id in players) {
+        let p = players[id]; ctx.fillStyle = p.color; ctx.fillRect(p.x-15, p.y-15, 30, 30);
+        ctx.fillStyle = "black"; ctx.fillText(p.nick, p.x-15, p.y-20);
+    }
+    ctx.restore();
+
+    document.getElementById('r_wood').innerText = Math.floor(player.wood);
+    document.getElementById('r_pop').innerText = Math.floor(player.pop);
+    requestAnimationFrame(update);
+}
+</script>
+</body>
+</html>
