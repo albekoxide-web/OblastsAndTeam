@@ -1,49 +1,66 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Empires</title>
+    <title>Oblasts & Team: Pro Edition</title>
     <style>
-        :root { --accent: #2ecc71; --bg: rgba(20, 20, 30, 0.9); --border: rgba(255, 255, 255, 0.1); }
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; touch-action: none; color: white; }
-        #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1e3c72 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .win { background: var(--bg); padding: 30px; border-radius: 20px; text-align: center; width: 85%; max-width: 350px; backdrop-filter: blur(10px); border: 1px solid var(--border); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; text-align: center; font-size: 16px; }
-        button.start-btn { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 18px; transition: 0.3s; }
-        #gui { position: absolute; top: 20px; left: 20px; display: none; flex-direction: column; gap: 8px; pointer-events: none; z-index: 500; }
-        .res-card { background: var(--bg); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-        #hotbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 500; }
-        .slot { width: 55px; height: 55px; background: var(--bg); border-radius: 12px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; pointer-events: auto; position: relative; }
-        .slot:hover { border-color: var(--accent); }
-        .tooltip { position: absolute; bottom: 70px; background: #000; padding: 5px; border-radius: 5px; font-size: 10px; opacity: 0; pointer-events: none; width: 100px; text-align: center; transition: 0.2s; }
-        .slot:hover .tooltip { opacity: 1; }
+        :root { --p: #00ff88; --s: #ff0055; --bg: #0a0a0f; }
+        body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; touch-action: none; }
+        
+        /* Меню Лобби */
+        #lobby { position: absolute; inset: 0; background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .glass { background: rgba(255,255,255,0.05); padding: 40px; border-radius: 30px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: none; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; font-size: 16px; outline: none; }
+        .btn-play { width: 100%; padding: 15px; background: linear-gradient(45deg, var(--p), #00d4ff); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transform: translateY(0); transition: 0.2s; }
+        .btn-play:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,255,136,0.3); }
+
+        /* Игровой HUD */
+        #hud { position: absolute; top: 20px; left: 20px; display: none; flex-direction: column; gap: 10px; pointer-events: none; z-index: 500; }
+        .stat { background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 15px; border-left: 4px solid var(--p); display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 18px; }
+        
+        /* Чат */
+        #chat-box { position: absolute; bottom: 100px; left: 20px; width: 250px; height: 150px; background: rgba(0,0,0,0.4); border-radius: 10px; display: none; flex-direction: column; padding: 10px; font-size: 12px; overflow-y: auto; pointer-events: none; }
+        #chat-input { position: absolute; bottom: 70px; left: 20px; width: 250px; display: none; }
+
+        /* Хотбар */
+        #hotbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; gap: 12px; z-index: 500; }
+        .slot { width: 65px; height: 65px; background: rgba(0,0,0,0.7); border-radius: 18px; border: 2px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; pointer-events: auto; }
+        .slot:hover { border-color: var(--p); background: rgba(0,255,136,0.1); }
+        .slot span { font-size: 24px; }
+        .slot small { font-size: 10px; color: #aaa; }
+
         canvas { display: block; }
     </style>
 </head>
 <body>
 
 <div id="lobby">
-    <div class="win">
-        <h1>Oblasts & Team</h1>
-        <input type="text" id="nick" placeholder="Твій Нік">
-        <input type="text" id="room" placeholder="Код світу">
-        <button class="start-btn" onclick="init()">УВІЙТИ</button>
+    <div class="glass">
+        <h1 style="margin: 0 0 10px 0; letter-spacing: 2px;">OBLASTS</h1>
+        <p style="color: #888; font-size: 14px; margin-bottom: 25px;">ONLINE STRATEGY</p>
+        <input type="text" id="nick" placeholder="Имя игрока">
+        <input type="text" id="room" placeholder="Код комнаты (напр. 101)">
+        <button class="btn-play" onclick="startGame()">ВОЙТИ В ИГРУ</button>
     </div>
 </div>
 
-<div id="gui">
-    <div class="res-card">🌲 <span id="r_wood">0</span></div>
-    <div class="res-card">🪨 <span id="r_stone">0</span></div>
-    <div class="res-card">🍎 <span id="r_food">0</span></div>
-    <div class="res-card">👥 <span id="r_pop">0</span></div>
+<div id="hud">
+    <div class="stat">🌲 <span id="r_wood">0</span></div>
+    <div class="stat">🪨 <span id="r_stone">0</span></div>
+    <div class="stat">🍎 <span id="r_food">0</span></div>
+    <div class="stat">⚔️ <span id="r_army">0</span></div>
 </div>
 
+<div id="chat-box" id="chatLines"></div>
+<input type="text" id="chat-input" placeholder="Нажми Enter чтобы отправить...">
+
 <div id="hotbar">
-    <div class="slot" onclick="act('mine')">⛏️<div class="tooltip">Збір (F)</div></div>
-    <div class="slot" onclick="act('flag')">🚩<div class="tooltip">Прапор (E)</div></div>
-    <div class="slot" onclick="act('house')">🏠<div class="tooltip">Хата (H)</div></div>
-    <div class="slot" onclick="act('farm')">🌾<div class="tooltip">Ферма (B)</div></div>
+    <div class="slot" onclick="act('mine')"><span>⛏️</span><small>Сбор (F)</small></div>
+    <div class="slot" onclick="act('flag')"><span>🚩</span><small>Флаг (E)</small></div>
+    <div class="slot" onclick="act('house')"><span>🏠</span><small>Дом (H)</small></div>
+    <div class="slot" onclick="act('farm')"><span>🌾</span><small>Ферма (B)</small></div>
+    <div class="slot" onclick="act('army')"><span>⚔️</span><small>Войско (R)</small></div>
 </div>
 
 <canvas id="game"></canvas>
@@ -52,6 +69,7 @@
 <script src="https://gstatic.com"></script>
 
 <script>
+// ВСТАВЛЯЕМ ТВОИ КЛЮЧИ (уже настроены)
 const firebaseConfig = {
   apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
   authDomain: "://firebaseapp.com",
@@ -65,124 +83,128 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let me = { x: 2500, y: 2500, wood: 100, stone: 50, food: 100, pop: 1, nick: "", color: "" };
-let players = {}, flags = {}, items = {}, buildings = {}, room = "", mapSize = 5000;
+let me = { x: 2500, y: 2500, wood: 120, stone: 60, food: 100, pop: 1, army: 0, nick: "", color: "" };
+let players = {}, flags = {}, items = {}, buildings = {}, room = "", mapS = 5000;
+let cam = { x: 2500, y: 2500 };
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-function init() {
+function startGame() {
     const n = document.getElementById('nick').value;
-    room = document.getElementById('room').value.toUpperCase() || "WAR";
-    if(!n) return alert("Введи нік!");
+    room = document.getElementById('room').value.toUpperCase() || "LOBBY";
+    if(!n) return alert("Введите имя!");
     me.nick = n;
-    me.color = `hsl(${Math.random()*360}, 70%, 50%)`;
+    me.color = `hsl(${Math.random()*360}, 75%, 55%)`;
     
     document.getElementById('lobby').style.display = 'none';
-    document.getElementById('gui').style.display = 'flex';
+    document.getElementById('hud').style.display = 'flex';
     document.getElementById('hotbar').style.display = 'flex';
+    document.getElementById('chat-box').style.display = 'flex';
+    document.getElementById('chat-input').style.display = 'block';
     
     db.ref('rooms/'+room+'/players/'+me.nick).onDisconnect().remove();
     db.ref('rooms/'+room+'/players').on('value', s => players = s.val() || {});
     db.ref('rooms/'+room+'/flags').on('value', s => flags = s.val() || {});
     db.ref('rooms/'+room+'/buildings').on('value', s => buildings = s.val() || {});
-    db.ref('rooms/'+room+'/items').on('value', s => {
-        if(!s.exists()) spawnRes(); else items = s.val() || {};
-    });
+    db.ref('rooms/'+room+'/items').on('value', s => { if(!s.exists()) spawn(); else items = s.val() || {}; });
 
-    setInterval(() => {
-        let farms = 0, houses = 0;
-        for(let id in buildings) if(buildings[id].owner === me.nick) {
-            if(buildings[id].type === 'farm') farms++; if(buildings[id].type === 'house') houses++;
-        }
-        me.food += farms * 5;
-        if(me.food > 0) {
-            me.food -= (me.pop * 0.12);
-            if(me.pop < 10 + houses * 15) me.pop += 0.2;
-        } else { me.pop -= 0.5; if(me.pop < 1) me.pop = 1; }
-        db.ref('rooms/'+room+'/players/'+me.nick).set(me);
-    }, 3000);
-
+    setInterval(tick, 3000);
     requestAnimationFrame(loop);
 }
 
-function spawnRes() {
-    let res = {};
-    for(let i=0; i<100; i++) {
-        let type = Math.random();
-        res['r'+i] = { x: Math.random()*mapSize, y: Math.random()*mapSize, type: type > 0.6 ? 't' : (type > 0.3 ? 's' : 'f') };
+function spawn() {
+    let r = {};
+    for(let i=0; i<120; i++) {
+        let t = Math.random();
+        r['i'+i] = { x: Math.random()*mapS, y: Math.random()*mapS, type: t>0.7?'t':(t>0.4?'s':'f') };
     }
-    db.ref('rooms/'+room+'/items').set(res);
+    db.ref('rooms/'+room+'/items').set(r);
+}
+
+function tick() {
+    let f = 0, h = 0;
+    for(let id in buildings) if(buildings[id].owner === me.nick) { if(buildings[id].type==='farm') f++; else h++; }
+    me.food += f * 6;
+    if(me.food > 0) { me.food -= (me.pop*0.15 + me.army*0.25); if(me.pop < 10 + h*20) me.pop += 0.3; }
+    else { me.pop -= 0.6; me.army *= 0.7; if(me.pop < 1) me.pop = 1; }
+    db.ref('rooms/'+room+'/players/'+me.nick).set(me);
 }
 
 function act(type) {
     if(type === 'mine') {
         for(let id in items) {
             let it = items[id];
-            if(Math.hypot(me.x - it.x, me.y - it.y) < 70) {
-                if(it.type === 't') me.wood += 20; else if(it.type === 's') me.stone += 15; else me.food += 25;
+            if(Math.hypot(me.x - it.x, me.y - it.y) < 80) {
+                if(it.type === 't') me.wood += 25; else if(it.type === 's') me.stone += 20; else me.food += 30;
                 db.ref('rooms/'+room+'/items/'+id).remove();
-                setTimeout(() => db.ref('rooms/'+room+'/items/'+id).set({x:Math.random()*mapSize, y:Math.random()*mapSize, type:it.type}), 20000);
+                setTimeout(()=>db.ref('rooms/'+room+'/items/'+id).set({x:Math.random()*mapS, y:Math.random()*mapS, type:it.type}), 15000);
                 return;
             }
         }
     }
-    if(type === 'flag' && me.wood >= 50) {
-        db.ref('rooms/'+room+'/flags/'+Date.now()).set({x:me.x, y:me.y, color:me.color, owner:me.nick});
-        me.wood -= 50;
-    }
-    if(type === 'house' && me.wood >= 80 && me.stone >= 30) {
-        db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'house', owner:me.nick, color:me.color});
-        me.wood -= 80; me.stone -= 30;
-    }
-    if(type === 'farm' && me.wood >= 40 && me.stone >= 60) {
-        db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'farm', owner:me.nick, color:me.color});
-        me.wood -= 40; me.stone -= 60;
-    }
+    if(type==='flag' && me.wood>=50) { db.ref('rooms/'+room+'/flags/'+Date.now()).set({x:me.x, y:me.y, color:me.color, owner:me.nick}); me.wood-=50; }
+    if(type==='house' && me.wood>=100 && me.stone>=40) { db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'house', owner:me.nick, color:me.color}); me.wood-=100; me.stone-=40; }
+    if(type==='farm' && me.wood>=50 && me.stone>=80) { db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'farm', owner:me.nick, color:me.color}); me.wood-=50; me.stone-=80; }
+    if(type==='army' && me.food>=60) { me.army++; me.food-=60; }
 }
 
 let keys = {};
-window.addEventListener('keydown', e => {
+window.addEventListener('keydown', e => { 
     keys[e.code] = true;
-    if(e.code === 'KeyF') act('mine'); if(e.code === 'KeyE') act('flag');
-    if(e.code === 'KeyH') act('house'); if(e.code === 'KeyB') act('farm');
+    if(e.code==='KeyF') act('mine'); if(e.code==='KeyE') act('flag');
+    if(e.code==='KeyH') act('house'); if(e.code==='KeyB') act('farm');
+    if(e.code==='KeyR') act('army');
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
 function loop() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    if(keys['KeyW']) me.y -= 7; if(keys['KeyS']) me.y += 7;
-    if(keys['KeyA']) me.x -= 7; if(keys['KeyD']) me.x += 7;
-    if(keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD']) db.ref('rooms/'+room+'/players/'+me.nick).set(me);
+    if(keys['KeyW']) me.y -= 8; if(keys['KeyS']) me.y += 8;
+    if(keys['KeyA']) me.x -= 8; if(keys['KeyD']) me.x += 8;
+    
+    // Плавная камера
+    cam.x += (me.x - cam.x) * 0.1;
+    cam.y += (me.y - cam.y) * 0.1;
+    
+    if(keys['KeyW']||keys['KeyS']||keys['KeyA']||keys['KeyD']) db.ref('rooms/'+room+'/players/'+me.nick).set(me);
 
     ctx.save();
-    ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
+    ctx.translate(canvas.width/2 - cam.x, canvas.height/2 - cam.y);
+
+    // Рисуем сетку мира
+    ctx.strokeStyle = "rgba(255,255,255,0.05)";
+    for(let i=0; i<=mapS; i+=200) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,mapS); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(mapS,i); ctx.stroke(); }
 
     for(let id in flags) {
-        let f = flags[id]; ctx.fillStyle = f.color.replace('50%)','15%)');
-        ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
-        ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-35, 4, 35);
+        let f = flags[id]; ctx.fillStyle = f.color.replace('55%)','10%)');
+        ctx.beginPath(); ctx.arc(f.x, f.y, 350, 0, 7); ctx.fill();
+        ctx.fillStyle = f.color; ctx.fillRect(f.x-3, f.y-40, 6, 40); ctx.fillRect(f.x, f.y-40, 25, 15);
     }
     for(let id in items) {
-        let it = items[id]; ctx.fillStyle = it.type==='t'?'#2ecc71':(it.type==='s'?'#95a5a6':'#f1c40f');
-        ctx.beginPath(); ctx.arc(it.x, it.y, 15, 0, 7); ctx.fill();
+        let it = items[id]; ctx.fillStyle = it.type==='t'?'#00ff88':(it.type==='s'?'#777':'#ffaa00');
+        ctx.beginPath(); ctx.arc(it.x, it.y, 18, 0, 7); ctx.fill();
     }
     for(let id in buildings) {
-        let b = buildings[id]; ctx.fillStyle = b.type==='house'?'#e67e22':'#f1c40f';
-        ctx.fillRect(b.x-25, b.y-25, 50, 50);
+        let b = buildings[id]; ctx.fillStyle = b.type==='house'?'#ff4400':'#ffcc00';
+        ctx.fillRect(b.x-30, b.y-30, 60, 60); ctx.strokeStyle="white"; ctx.strokeRect(b.x-30, b.y-30, 60, 60);
     }
     for(let id in players) {
-        let p = players[id]; ctx.fillStyle = p.color; ctx.fillRect(p.x-15, p.y-15, 30, 30);
-        ctx.fillStyle = "white"; ctx.font="bold 14px sans-serif"; ctx.fillText(p.nick, p.x-20, p.y-25);
+        let p = players[id]; ctx.fillStyle = p.color; 
+        ctx.beginPath(); ctx.arc(p.x, p.y, 20, 0, 7); ctx.fill();
+        ctx.fillStyle = "white"; ctx.font="bold 16px sans-serif"; ctx.textAlign="center";
+        ctx.fillText(p.nick + " (⚔️" + Math.floor(p.army) + ")", p.x, p.y - 30);
     }
     ctx.restore();
 
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    // Профессиональный туман войны
+    ctx.fillStyle = "rgba(0,0,0,0.85)";
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
-    ctx.arc(canvas.width/2, canvas.height/2, 250, 0, Math.PI*2);
+    ctx.arc(canvas.width/2 + (me.x - cam.x), canvas.height/2 + (me.y - cam.y), 300, 0, Math.PI*2);
     for(let id in flags) if(flags[id].owner === me.nick) {
-        ctx.moveTo(flags[id].x - me.x + canvas.width/2, flags[id].y - me.y + canvas.height/2);
-        ctx.arc(flags[id].x - me.x + canvas.width/2, flags[id].y - me.y + canvas.height/2, 350, 0, Math.PI*2);
+        let fx = flags[id].x - cam.x + canvas.width/2;
+        let fy = flags[id].y - cam.y + canvas.height/2;
+        ctx.moveTo(fx, fy); ctx.arc(fx, fy, 400, 0, Math.PI*2);
     }
     ctx.fill();
     ctx.globalCompositeOperation = 'source-over';
@@ -190,7 +212,7 @@ function loop() {
     document.getElementById('r_wood').innerText = Math.floor(me.wood);
     document.getElementById('r_stone').innerText = Math.floor(me.stone);
     document.getElementById('r_food').innerText = Math.floor(me.food);
-    document.getElementById('r_pop').innerText = Math.floor(me.pop);
+    document.getElementById('r_army').innerText = Math.floor(me.army);
     requestAnimationFrame(loop);
 }
 </script>
