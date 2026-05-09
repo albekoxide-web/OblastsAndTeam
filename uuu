@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Oblasts & Team</title>
+    <style>
+        body { margin: 0; background: #000; color: #0f8; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .win { border: 2px solid #0f8; padding: 40px; border-radius: 20px; text-align: center; background: #111; }
+        input { display: block; margin: 10px auto; padding: 10px; background: #222; border: 1px solid #0f8; color: #fff; border-radius: 5px; }
+        button { padding: 10px 20px; background: #0f8; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div id="start-screen" class="win">
+        <h1>OBLASTS ONLINE</h1>
+        <input type="text" id="nick" placeholder="Твій Нік">
+        <input type="text" id="room" placeholder="Код кімнати">
+        <button onclick="alert('Підключення до Firebase... Перевір консоль (F12)')">УВІЙТИ</button>
+    </div>
+</body>
+</html>
