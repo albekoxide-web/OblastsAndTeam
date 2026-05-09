@@ -3,47 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Hardcore</title>
+    <title>Oblasts & Team: Neon Empire</title>
     <style>
-        :root { --p: #00ff88; --bg: #0a0a0f; }
-        body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; touch-action: none; }
-        #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1a1a2e, #000); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .win { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 300px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; text-align: center; }
-        button { width: 100%; padding: 15px; background: var(--p); color: #000; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        #gui { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 8px; z-index: 500; pointer-events: none; }
-        .stat { background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 10px; border-left: 4px solid var(--p); font-weight: bold; font-size: 14px; }
-        #hotbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 500; }
-        .slot { width: 55px; height: 55px; background: rgba(0,0,0,0.8); border-radius: 12px; border: 2px solid #444; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; pointer-events: auto; }
-        .slot:hover { border-color: var(--p); }
-        .slot small { font-size: 8px; color: #aaa; text-align: center; }
+        :root { --p: #00ff88; --s: #00d4ff; --bg: #050508; --glass: rgba(255, 255, 255, 0.05); }
+        body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', Roboto, sans-serif; color: white; touch-action: none; }
+        
+        /* Фон меню */
+        #lobby { position: absolute; inset: 0; background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .window { background: var(--glass); padding: 40px; border-radius: 30px; backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; width: 340px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); }
+        
+        /* Стили полей ввода */
+        input, select { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--p); box-shadow: 0 0 10px rgba(0,255,136,0.2); }
+
+        /* Красивые кнопки */
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-main { background: linear-gradient(45deg, var(--p), var(--s)); color: #000; }
+        .btn-main:hover { transform: scale(1.03); box-shadow: 0 0 20px rgba(0,255,136,0.4); }
+        .btn-main:active { transform: scale(0.98); }
+
+        /* Игровой HUD */
+        #hud { position: absolute; top: 25px; left: 25px; display: none; flex-direction: column; gap: 10px; pointer-events: none; z-index: 500; }
+        .stat-card { background: rgba(0,0,0,0.6); padding: 10px 18px; border-radius: 15px; border-left: 5px solid var(--p); font-size: 16px; font-weight: bold; backdrop-filter: blur(5px); }
+
+        /* Нижняя панель (Hotbar) */
+        #hotbar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: none; gap: 15px; z-index: 500; padding: 10px 20px; background: rgba(0,0,0,0.5); border-radius: 25px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .slot { width: 65px; height: 65px; background: rgba(255,255,255,0.05); border-radius: 18px; border: 2px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; pointer-events: auto; }
+        .slot:hover { border-color: var(--p); background: rgba(0,255,136,0.15); transform: translateY(-5px); }
+        .slot span { font-size: 26px; }
+        .slot small { font-size: 10px; color: var(--p); font-weight: 800; margin-top: 2px; }
+
         canvas { display: block; }
     </style>
 </head>
 <body>
 
 <div id="lobby">
-    <div class="win">
-        <h1>OBLASTS ONLINE</h1>
-        <input type="text" id="nick" placeholder="Твой Ник">
-        <input type="text" id="room" placeholder="Код (напр. 1)">
-        <button onclick="start()">ВОЙТИ</button>
+    <div id="m-start" class="window">
+        <h1 style="margin:0 0 10px 0; font-size:28px; letter-spacing:3px;">OBLASTS</h1>
+        <p style="color:#888; font-size:14px; margin-bottom:20px;">ЭПОХА ИМПЕРИЙ</p>
+        <input type="text" id="nick" placeholder="Введи ник">
+        <button class="btn btn-main" onclick="showCreate()">Создать мир</button>
+        <input type="text" id="roomCode" placeholder="Код комнаты">
+        <button class="btn" style="background:#222; color:white;" onclick="joinGame()">Присоединиться</button>
+    </div>
+
+    <div id="m-create" class="window" style="display:none;">
+        <h3>Настройки Полотна</h3>
+        <select id="mapSize">
+            <option value="4000">Компактное (4000x4000)</option>
+            <option value="7000" selected>Стандарт (7000x7000)</option>
+            <option value="12000">Мировой океан (12000x12000)</option>
+        </select>
+        <button class="btn btn-main" onclick="finalizeCreate()">Сгенерировать</button>
+    </div>
+
+    <div id="m-code" class="window" style="display:none;">
+        <p style="color:#888;">Код твоего мира:</p>
+        <h1 id="shareCode" style="color:var(--p); letter-spacing:8px; font-size:36px; margin:10px 0;">XXXX</h1>
+        <button class="btn btn-main" onclick="enterGame()">Начать игру</button>
     </div>
 </div>
 
-<div id="gui">
-    <div class="stat">🌲 Дерево: <span id="r_wood">0</span></div>
-    <div class="stat">🪨 Камень: <span id="r_stone">0</span></div>
-    <div class="stat">🍎 Еда: <span id="r_food">0</span></div>
-    <div class="stat">⚔️ Армия: <span id="r_army">0</span></div>
+<div id="hud">
+    <div class="stat-card">🌲 Дерево: <span id="r_wood">0</span></div>
+    <div class="stat-card">🪨 Камень: <span id="r_stone">0</span></div>
+    <div class="stat-card">🍎 Еда: <span id="r_food">0</span></div>
+    <div class="stat-card">👥 Люди: <span id="r_pop">0</span></div>
+    <div class="stat-card" style="border-color: #ff3e3e;">⚔️ Армия: <span id="r_army">0</span></div>
 </div>
 
 <div id="hotbar">
-    <div class="slot" onclick="act('mine')">⛏️<small>ЗБОР (F)</small></div>
-    <div class="slot" onclick="act('flag')">🚩<small>ФЛАГ (E)</small></div>
-    <div class="slot" onclick="act('house')">🏠<small>ДОМ (H)</small></div>
-    <div class="slot" onclick="act('farm')">🌾<small>ФЕРМА (B)</small></div>
-    <div class="slot" onclick="act('army')">⚔️<small>АРМИЯ (R)</small></div>
+    <div class="slot" onclick="act('mine')"><span>⛏️</span><small>F</small></div>
+    <div class="slot" onclick="act('flag')"><span>🚩</span><small>E</small></div>
+    <div class="slot" onclick="act('house')"><span>🏠</span><small>H</small></div>
+    <div class="slot" onclick="act('farm')"><span>🌾</span><small>B</small></div>
+    <div class="slot" onclick="act('army')"><span>⚔️</span><small>R</small></div>
 </div>
 
 <canvas id="game"></canvas>
@@ -52,6 +87,7 @@
 <script src="https://gstatic.com"></script>
 
 <script>
+// ТВОЙ КОНФИГ FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
   authDomain: "://firebaseapp.com",
@@ -65,48 +101,65 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let me = { x: 2500, y: 2500, wood: 100, stone: 50, food: 100, pop: 1, army: 0, nick: "", color: "" };
-let players = {}, flags = {}, items = {}, buildings = {}, room = "", mapS = 5000;
+let me = { x: 0, y: 0, wood: 150, stone: 60, food: 100, pop: 1, army: 0, nick: "", color: "" };
+let players = {}, flags = {}, buildings = {}, items = {}, room = "", mapLimit = 6000;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-function start() {
-    const n = document.getElementById('nick').value;
-    room = document.getElementById('room').value.toUpperCase() || "WAR";
-    if(!n) return alert("Введите имя!");
-    me.nick = n;
+function showCreate() {
+    if(!document.getElementById('nick').value) return alert("Введи ник!");
+    document.getElementById('m-start').style.display = 'none';
+    document.getElementById('m-create').style.display = 'block';
+}
+
+function finalizeCreate() {
+    room = Math.random().toString(36).substring(2, 6).toUpperCase();
+    mapLimit = parseInt(document.getElementById('mapSize').value);
+    let res = {};
+    for(let i=0; i<100; i++) {
+        let t = Math.random();
+        res['r'+i] = { x: Math.random()*mapLimit, y: Math.random()*mapLimit, type: t>0.6?'t':(t>0.3?'s':'f') };
+    }
+    db.ref('rooms/'+room).set({ settings: { limit: mapLimit }, items: res });
+    document.getElementById('m-create').style.display = 'none';
+    document.getElementById('m-code').style.display = 'block';
+    document.getElementById('shareCode').innerText = room;
+}
+
+function joinGame() {
+    const nick = document.getElementById('nick').value;
+    const code = document.getElementById('roomCode').value.toUpperCase();
+    if(!nick || !code) return alert("Заполни всё!");
+    db.ref('rooms/'+code).once('value', s => {
+        if(!s.exists()) return alert("Код неверен!");
+        room = code; mapLimit = s.val().settings.limit; enterGame();
+    });
+}
+
+function enterGame() {
+    me.nick = document.getElementById('nick').value;
     me.color = `hsl(${Math.random()*360}, 75%, 55%)`;
+    me.x = me.y = mapLimit / 2;
     document.getElementById('lobby').style.display = 'none';
-    document.getElementById('gui').style.display = 'flex';
+    document.getElementById('hud').style.display = 'flex';
     document.getElementById('hotbar').style.display = 'flex';
-    
     db.ref('rooms/'+room+'/players/'+me.nick).onDisconnect().remove();
     db.ref('rooms/'+room+'/players').on('value', s => players = s.val() || {});
     db.ref('rooms/'+room+'/flags').on('value', s => flags = s.val() || {});
     db.ref('rooms/'+room+'/buildings').on('value', s => buildings = s.val() || {});
-    db.ref('rooms/'+room+'/items').on('value', s => { if(!s.exists()) spawn(); else items = s.val() || {}; });
-
+    db.ref('rooms/'+room+'/items').on('value', s => items = s.val() || {});
     setInterval(tick, 3000);
     requestAnimationFrame(loop);
-}
-
-function spawn() {
-    let r = {};
-    for(let i=0; i<100; i++) {
-        let t = Math.random();
-        r['i'+i] = { x: Math.random()*mapS, y: Math.random()*mapS, type: t>0.7?'t':(t>0.4?'s':'f') };
-    }
-    db.ref('rooms/'+room+'/items').set(r);
 }
 
 function tick() {
     let f = 0, h = 0;
     for(let id in buildings) if(buildings[id].owner === me.nick) { if(buildings[id].type==='farm') f++; else h++; }
-    me.food += f * 7;
+    me.food += f * 5;
     if(me.food > 0) {
         me.food -= (me.pop * 0.15 + me.army * 0.3);
-        if(me.pop < 10 + h * 20) me.pop += 0.3;
-    } else { me.pop -= 0.7; me.army *= 0.7; if(me.pop < 1) me.pop = 1; }
+        if(me.pop < 10 + h * 15) me.pop += 0.3;
+    } else { me.pop -= 0.6; me.army *= 0.7; if(me.pop < 1) me.pop = 1; }
     db.ref('rooms/'+room+'/players/'+me.nick).set(me);
 }
 
@@ -117,7 +170,7 @@ function act(type) {
             if(Math.hypot(me.x - it.x, me.y - it.y) < 80) {
                 if(it.type === 't') me.wood += 25; else if(it.type === 's') me.stone += 20; else me.food += 30;
                 db.ref('rooms/'+room+'/items/'+id).remove();
-                setTimeout(()=>db.ref('rooms/'+room+'/items/'+id).set({x:Math.random()*mapS, y:Math.random()*mapS, type:it.type}), 20000);
+                setTimeout(()=>db.ref('rooms/'+room+'/items/'+id).set({x:Math.random()*mapLimit, y:Math.random()*mapLimit, type:it.type}), 20000);
                 return;
             }
         }
@@ -129,55 +182,33 @@ function act(type) {
 }
 
 let keys = {};
-window.addEventListener('keydown', e => { 
-    keys[e.code] = true;
-    if(e.code==='KeyF') act('mine'); if(e.code==='KeyE') act('flag');
-    if(e.code==='KeyH') act('house'); if(e.code==='KeyB') act('farm');
-    if(e.code==='KeyR') act('army');
-});
+window.addEventListener('keydown', e => { keys[e.code] = true; if(e.code==='KeyF') act('mine'); if(e.code==='KeyE') act('flag'); if(e.code==='KeyH') act('house'); if(e.code==='KeyB') act('farm'); if(e.code==='KeyR') act('army'); });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
 function loop() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    if(keys['KeyW']) me.y -= 7; if(keys['KeyS']) me.y += 7;
-    if(keys['KeyA']) me.x -= 7; if(keys['KeyD']) me.x += 7;
+    if(keys['KeyW']) me.y -= 7; if(keys['KeyS']) me.y += 7; if(keys['KeyA']) me.x -= 7; if(keys['KeyD']) me.x += 7;
     if(keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD']) db.ref('rooms/'+room+'/players/'+me.nick).set(me);
-
     ctx.save();
     ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
     for(let id in flags) {
-        let f = flags[id]; ctx.fillStyle = f.color.replace('55%)','15%)');
-        ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
+        let f = flags[id]; ctx.fillStyle = f.color.replace('55%)','15%)'); ctx.beginPath(); ctx.arc(f.x, f.y, 350, 0, 7); ctx.fill();
         ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-35, 4, 35);
     }
     for(let id in items) {
         let it = items[id]; ctx.fillStyle = it.type==='t'?'#00ff88':(it.type==='s'?'#95a5a6':'#f1c40f');
         ctx.beginPath(); ctx.arc(it.x, it.y, 15, 0, 7); ctx.fill();
     }
-    for(let id in buildings) {
-        let b = buildings[id]; ctx.fillStyle = b.type==='house'?'#e67e22':'#f1c40f';
-        ctx.fillRect(b.x-25, b.y-25, 50, 50);
-    }
-    for(let id in players) {
-        let p = players[id]; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, 7); ctx.fill();
-        ctx.fillStyle = "white"; ctx.font="bold 14px sans-serif"; ctx.fillText(p.nick + " (⚔️" + Math.floor(p.army) + ")", p.x-20, p.y-25);
-    }
+    for(let id in buildings) { let b = buildings[id]; ctx.fillStyle = b.type==='house'?'#ff4400':'#ffcc00'; ctx.fillRect(b.x-25, b.y-25, 50, 50); }
+    for(let id in players) { let p = players[id]; ctx.fillStyle = p.color; ctx.fillRect(p.x-15, p.y-15, 30, 30); ctx.fillStyle = "white"; ctx.font="bold 14px sans-serif"; ctx.fillText(p.nick, p.x-20, p.y-25); }
     ctx.restore();
-
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(canvas.width/2, canvas.height/2, 250, 0, Math.PI*2);
-    for(let id in flags) if(flags[id].owner === me.nick) {
-        ctx.moveTo(flags[id].x - me.x + canvas.width/2, flags[id].y - me.y + canvas.height/2);
-        ctx.arc(flags[id].x - me.x + canvas.width/2, flags[id].y - me.y + canvas.height/2, 350, 0, Math.PI*2);
-    }
-    ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
-
+    ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(canvas.width/2, canvas.height/2, 250, 0, Math.PI*2);
+    for(let id in flags) if(flags[id].owner === me.nick) { ctx.moveTo(flags[id].x - me.x + canvas.width/2, flags[id].y - me.y + canvas.height/2); ctx.arc(flags[id].x - me.x + canvas.width/2, flags[id].y - me.y + canvas.height/2, 400, 0, Math.PI*2); }
+    ctx.fill(); ctx.globalCompositeOperation = 'source-over';
     document.getElementById('r_wood').innerText = Math.floor(me.wood);
     document.getElementById('r_stone').innerText = Math.floor(me.stone);
     document.getElementById('r_food').innerText = Math.floor(me.food);
+    document.getElementById('r_pop').innerText = Math.floor(me.pop);
     document.getElementById('r_army').innerText = Math.floor(me.army);
     requestAnimationFrame(loop);
 }
