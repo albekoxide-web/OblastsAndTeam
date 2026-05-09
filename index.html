@@ -3,33 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Touch Edition</title>
+    <title>Oblasts & Team: Ultimate Edition</title>
     <style>
         :root { --p: #00ff88; --s: #00d4ff; --bg: #050508; }
         body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; touch-action: none; user-select: none; }
         
-        /* Лобби */
+        /* Меню Лобби */
         #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1a1a2e 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .window { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 30px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 320px; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(0,0,0,0.4); color: white; outline: none; text-align: center; }
+        .window { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 30px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 320px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); }
+        input, select { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: none; background: rgba(0,0,0,0.4); color: white; outline: none; text-align: center; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; text-transform: uppercase; }
         .btn-main { background: linear-gradient(45deg, var(--p), var(--s)); color: #000; }
 
-        /* Игровой HUD (Ресурсы) */
-        #hud { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 5px; pointer-events: none; z-index: 500; }
-        .stat { background: rgba(0,0,0,0.7); padding: 5px 12px; border-radius: 8px; border-left: 3px solid var(--p); font-size: 14px; font-weight: bold; }
+        /* Игровой HUD */
+        #hud { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 5px; z-index: 500; }
+        .stat { background: rgba(0,0,0,0.7); padding: 6px 15px; border-radius: 10px; border-left: 4px solid var(--p); font-size: 14px; font-weight: bold; }
 
         /* Джойстик */
-        #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; touch-action: none; z-index: 600; border: 1px solid rgba(255,255,255,0.2); }
-        #joy-stick { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
+        #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; border: 1px solid rgba(255,255,255,0.2); }
+        #joy-stick { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); transition: 0.1s; }
 
-        /* Кнопки действий (Справа) */
-        #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 10px; z-index: 600; }
+        /* Панель кнопок (Справа) */
+        #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 12px; z-index: 600; }
         .act-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; position: relative; }
-        .act-btn span { position: absolute; bottom: -18px; font-size: 10px; color: var(--p); font-weight: bold; }
+        .act-btn span { position: absolute; bottom: -18px; font-size: 9px; color: var(--p); font-weight: bold; width: 80px; text-align: center; }
 
-        /* Рынок */
-        #market-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #16213e; padding: 20px; border-radius: 20px; display: none; z-index: 700; border: 2px solid var(--s); text-align: center; width: 250px; }
+        /* Окно Рынка */
+        #market-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #16213e; padding: 25px; border-radius: 20px; display: none; z-index: 700; border: 2px solid var(--s); text-align: center; width: 260px; }
 
         canvas { display: block; }
     </style>
@@ -58,8 +58,8 @@
 
 <div id="market-ui">
     <h3>РЫНОК ⚖️</h3>
-    <button class="btn" style="font-size:12px" onclick="trade('w2f')">50 🌲 -> 30 🍎</button>
-    <button class="btn" style="font-size:12px" onclick="trade('s2f')">50 🪨 -> 40 🍎</button>
+    <button class="btn" style="font-size:11px" onclick="trade('w2f')">50🌲 -> 30🍎</button>
+    <button class="btn" style="font-size:11px" onclick="trade('s2f')">50🪨 -> 40🍎</button>
     <button class="btn" style="background:#555" onclick="toggleMarket()">ЗАКРЫТЬ</button>
 </div>
 
@@ -78,7 +78,6 @@
     <div class="act-btn" onclick="act('flag')">🚩<span>ОБЛАСТЬ</span></div>
     <div class="act-btn" onclick="act('house')">🏠<span>ДОМ</span></div>
     <div class="act-btn" onclick="act('farm')">🌾<span>ФЕРМА</span></div>
-    <div class="act-btn" onclick="act('army')">⚔️<span>ВОЙСКО</span></div>
     <div class="act-btn" style="border-color:var(--s)" onclick="toggleMarket()">⚖️<span>РЫНОК</span></div>
 </div>
 
@@ -107,7 +106,12 @@ let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-function showSettings() { document.getElementById('m-start').style.display='none'; document.getElementById('m-settings').style.display='block'; }
+function showSettings() { 
+    if(!document.getElementById('nick').value) return alert("ВВЕДИ НИК!");
+    document.getElementById('m-start').style.display='none'; 
+    document.getElementById('m-settings').style.display='block'; 
+}
+
 function finalizeCreate() {
     room = Math.random().toString(36).substring(2, 6).toUpperCase();
     mapLimit = parseInt(document.getElementById('mapSize').value);
@@ -125,6 +129,7 @@ function finalizeCreate() {
 function joinGame() {
     const nick = document.getElementById('nick').value;
     const code = document.getElementById('joinCode').value.toUpperCase();
+    if(!nick || !code) return alert("ЗАПОЛНИ ПОЛЯ!");
     db.ref('rooms/'+code).once('value', s => {
         if(s.exists()) { room = code; mapLimit = s.val().settings.limit; enterGame(); }
         else alert("КОД НЕВЕРЕН");
@@ -132,7 +137,7 @@ function joinGame() {
 }
 
 function enterGame() {
-    me.nick = document.getElementById('nick').value || "Player";
+    me.nick = document.getElementById('nick').value;
     me.color = `hsl(${Math.random()*360}, 75%, 55%)`;
     me.x = me.y = mapLimit / 2;
     document.getElementById('lobby').style.display = 'none';
@@ -179,23 +184,14 @@ function act(type) {
     if(type==='flag' && me.wood>=50) { db.ref('rooms/'+room+'/flags/'+Date.now()).set({x:me.x, y:me.y, color:me.color, owner:me.nick}); me.wood-=50; }
     if(type==='house' && me.wood>=80 && me.stone>=40) { db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'house', owner:me.nick, color:me.color}); me.wood-=80; me.stone-=40; }
     if(type==='farm' && me.wood>=50 && me.stone>=70) { db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'farm', owner:me.nick, color:me.color}); me.wood-=50; me.stone-=70; }
-    if(type==='army' && me.food>=60) { me.army++; me.food-=60; }
 }
 
-// УПРАВЛЕНИЕ ДЖОЙСТИКОМ
 const jBg = document.getElementById('joy-bg');
 const jSt = document.getElementById('joy-stick');
 
-jBg.addEventListener('touchstart', (e) => { joy.active = true; joy.startX = e.touches[0].clientX; joy.startY = e.touches[0].clientY; });
-jBg.addEventListener('mousedown', (e) => { joy.active = true; joy.startX = e.clientX; joy.startY = e.clientY; });
-
-window.addEventListener('mousemove', (e) => { if(!joy.active) return; handleJoy(e.clientX, e.clientY); });
-window.addEventListener('touchmove', (e) => { if(!joy.active) return; handleJoy(e.touches[0].clientX, e.touches[0].clientY); });
-
-window.addEventListener('mouseup', () => { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; });
-window.addEventListener('touchend', () => { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; });
-
-function handleJoy(cx, cy) {
+function handleStart(cx, cy) { joy.active = true; joy.startX = cx; joy.startY = cy; }
+function handleMove(cx, cy) {
+    if(!joy.active) return;
     let dx = cx - joy.startX; let dy = cy - joy.startY;
     let dist = Math.min(Math.hypot(dx, dy), 40);
     let angle = Math.atan2(dy, dx);
@@ -203,6 +199,14 @@ function handleJoy(cx, cy) {
     joy.y = Math.sin(angle) * (dist / 40);
     jSt.style.transform = `translate(${joy.x*40}px, ${joy.y*40}px)`;
 }
+function handleEnd() { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; }
+
+jBg.addEventListener('touchstart', e => handleStart(e.touches[0].clientX, e.touches[0].clientY));
+jBg.addEventListener('mousedown', e => handleStart(e.clientX, e.clientY));
+window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY));
+window.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
+window.addEventListener('touchend', handleEnd);
+window.addEventListener('mouseup', handleEnd);
 
 function loop() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
