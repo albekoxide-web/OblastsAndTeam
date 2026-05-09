@@ -1,67 +1,71 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Hardcore Strategy</title>
+    <title>Oblasts & Team: Empires</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #1a1a1a; font-family: 'Segoe UI', sans-serif; touch-action: none; color: white; }
-        #lobby { position: absolute; inset: 0; background: #0f2027; display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .window { background: #2c3e50; padding: 25px; border-radius: 15px; text-align: center; width: 320px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: none; background: #34495e; color: white; }
-        button { width: 100%; padding: 12px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; margin-top: 10px; text-transform: uppercase; }
-        .btn-green { background: #27ae60; color: white; }
-        #gui { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; pointer-events: none; border: 1px solid #444; }
-        .res-item { font-size: 16px; margin: 3px 0; display: flex; justify-content: space-between; gap: 20px; }
-        #minimap { position: absolute; bottom: 20px; left: 20px; width: 150px; height: 150px; background: rgba(0,0,0,0.5); border: 2px solid #555; }
-        #mobile-controls { position: absolute; bottom: 20px; right: 20px; display: none; flex-direction: column; gap: 10px; }
-        .m-btn { width: 65px; height: 65px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 2px solid #fff; pointer-events: auto; }
+        :root { --accent: #2ecc71; --bg: rgba(20, 20, 30, 0.85); --border: rgba(255, 255, 255, 0.1); }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: none; color: white; }
+        
+        /* Меню входа */
+        #lobby { position: absolute; inset: 0; background: radial-gradient(circle at center, #1e3c72 0%, #111 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .win { background: var(--bg); padding: 30px; border-radius: 20px; text-align: center; width: 85%; max-width: 350px; backdrop-filter: blur(10px); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; text-align: center; }
+        button.start-btn { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        button.start-btn:hover { background: #27ae60; transform: translateY(-2px); }
+
+        /* Игровой интерфейс (Верхний левый угол) */
+        #gui { position: absolute; top: 20px; left: 20px; display: none; flex-direction: column; gap: 8px; pointer-events: none; z-index: 500; }
+        .res-card { background: var(--bg); padding: 8px 15px; border-radius: 12px; backdrop-filter: blur(5px); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; min-width: 120px; }
+        .res-card span { font-weight: bold; font-size: 18px; }
+
+        /* Панель способностей (Снизу) */
+        #hotbar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: none; gap: 12px; z-index: 500; }
+        .skill-slot { position: relative; width: 60px; height: 60px; background: var(--bg); border-radius: 15px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; pointer-events: auto; }
+        .skill-slot:hover { border-color: var(--accent); background: rgba(46, 204, 113, 0.2); }
+        .skill-slot .key-hint { position: absolute; top: -10px; right: -10px; background: #e74c3c; color: white; font-size: 10px; padding: 2px 6px; border-radius: 5px; font-weight: bold; }
+        .skill-slot .tooltip { position: absolute; bottom: 75px; background: var(--bg); padding: 10px; border-radius: 8px; font-size: 12px; width: 140px; opacity: 0; pointer-events: none; transition: 0.3s; border: 1px solid var(--border); text-align: center; }
+        .skill-slot:hover .tooltip { opacity: 1; bottom: 85px; }
+
         canvas { display: block; }
     </style>
 </head>
 <body>
 
 <div id="lobby">
-    <div id="main-menu" class="window">
-        <h2>Oblasts & Team</h2>
+    <div class="win">
+        <h1 style="margin-top:0">Oblasts & Team</h1>
+        <p style="opacity:0.7">Создайте свою империю</p>
         <input type="text" id="nick" placeholder="Твой Ник">
-        <button class="btn-green" onclick="showSettings()">СОЗДАТЬ ПОЛОТНО</button>
-        <input type="text" id="joinCode" placeholder="Код комнаты">
-        <button style="background:#2980b9; color:white;" onclick="joinGame()">ВОЙТИ</button>
-    </div>
-    <div id="settings-menu" class="window" style="display:none;">
-        <h3>Настройки</h3>
-        <select id="mapSize"><option value="3000">Маленькая</option><option value="6000" selected>Средняя</option></select>
-        <button class="btn-green" onclick="createGame()">ГОТОВО</button>
-    </div>
-    <div id="code-menu" class="window" style="display:none;">
-        <p>Твой код:</p>
-        <h1 id="displayCode" style="color:#f1c40f">XXXX</h1>
-        <button class="btn-green" onclick="enterWorld()">ИГРАТЬ</button>
+        <input type="text" id="room" placeholder="Код комнаты (напр. 555)">
+        <button class="start-btn" onclick="init()">ВОЙТИ В МИР</button>
     </div>
 </div>
 
 <div id="gui">
-    <div class="res-item">🌲 Дерево: <span id="r_wood">0</span></div>
-    <div class="res-item">🍎 Еда: <span id="r_food">0</span></div>
-    <div class="res-item">👥 Люди: <span id="r_pop">0</span></div>
-    <hr>
-    <div style="font-size:11px; color:#aaa">WASD-Ходить | F-Добыча | E-Флаг | B-Дом</div>
+    <div class="res-card"><span style="color:#2ecc71">🌲</span> <span id="r_wood">0</span></div>
+    <div class="res-card"><span style="color:#95a5a6">🪨</span> <span id="r_stone">0</span></div>
+    <div class="res-card"><span style="color:#f1c40f">🍎</span> <span id="r_food">0</span></div>
+    <div class="res-card"><span style="color:#3498db">👥</span> <span id="r_pop">0</span></div>
+    <div class="res-card"><span style="color:#e74c3c">⚔️</span> <span id="r_army">0</span></div>
 </div>
 
-<div id="mobile-controls">
-    <div class="m-btn" onclick="action('flag')">🚩</div>
-    <div class="m-btn" onclick="action('house')">🏠</div>
-    <div class="m-btn" onclick="action('harvest')">⛏️</div>
+<div id="hotbar">
+    <div class="skill-slot" onclick="act('mine')">⛏️<div class="key-hint">F</div><div class="tooltip"><b>Сбор ресурсов</b><br>Добыть дерево, камень или еду рядом</div></div>
+    <div class="skill-slot" onclick="act('flag')">🚩<div class="key-hint">E</div><div class="tooltip"><b>Флаг (50🌲)</b><br>Захват территории и обзор карты</div></div>
+    <div class="skill-slot" onclick="act('house')">🏠<div class="key-hint">H</div><div class="tooltip"><b>Хижина (80🌲 30🪨)</b><br>Увеличивает лимит населения</div></div>
+    <div class="skill-slot" onclick="act('farm')">🌾<div class="key-hint">B</div><div class="tooltip"><b>Ферма (40🌲 60🪨)</b><br>Автоматически дает +5 еды</div></div>
+    <div class="skill-slot" onclick="act('army')">⚔️<div class="key-hint">R</div><div class="tooltip"><b>Армия (50🍎 20🌲)</b><br>Нанять 1 солдата для защиты</div></div>
 </div>
 
 <canvas id="game"></canvas>
-<canvas id="minimap"></canvas>
 
 <script src="https://gstatic.com"></script>
 <script src="https://gstatic.com"></script>
 
 <script>
+// ТВІЙ КОНФІГ FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
   authDomain: "://firebaseapp.com",
@@ -75,116 +79,138 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let player = { x: 0, y: 0, wood: 100, food: 100, pop: 1, nick: "", color: "" };
-let players = {}, flags = {}, buildings = {}, worldItems = {}, roomID = "", mapSize = 6000;
+let me = { x: 2500, y: 2500, wood: 100, stone: 50, food: 100, pop: 1, army: 0, nick: "", color: "" };
+let players = {}, flags = {}, items = {}, buildings = {}, room = "", mapSize = 5000;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
-const mCanvas = document.getElementById('minimap');
-const mCtx = mCanvas.getContext('2d');
 
-function showSettings() { if(document.getElementById('nick').value) { document.getElementById('main-menu').style.display='none'; document.getElementById('settings-menu').style.display='block'; } }
-
-function createGame() {
-    roomID = Math.random().toString(36).substring(2, 6).toUpperCase();
-    mapSize = document.getElementById('mapSize').value;
-    let items = {};
-    for(let i=0; i<40; i++) items['i'+i] = {x:Math.random()*mapSize, y:Math.random()*mapSize, type: Math.random()>0.5?'tree':'bush'};
-    db.ref('rooms/'+roomID).set({ settings: {limit: mapSize}, worldItems: items });
-    document.getElementById('settings-menu').style.display='none';
-    document.getElementById('code-menu').style.display='block';
-    document.getElementById('displayCode').innerText = roomID;
-}
-
-function joinGame() {
-    const nick = document.getElementById('nick').value;
-    const code = document.getElementById('joinCode').value.toUpperCase();
-    db.ref('rooms/'+code).once('value', s => {
-        if(s.exists()) { roomID = code; mapSize = s.val().settings.limit; enterWorld(); }
-    });
-}
-
-function enterWorld() {
-    player.nick = document.getElementById('nick').value;
-    player.color = `hsl(${Math.random()*360}, 70%, 50%)`;
-    player.x = player.y = mapSize/2;
-    document.getElementById('lobby').style.display='none';
-    document.getElementById('gui').style.display='block';
-    document.getElementById('mobile-controls').style.display='flex';
+function init() {
+    const n = document.getElementById('nick').value;
+    room = document.getElementById('room').value.toUpperCase() || "WAR";
+    if(!n) return alert("Введите ник!");
+    me.nick = n;
+    me.color = `hsl(${Math.random()*360}, 70%, 50%)`;
     
-    db.ref('rooms/'+roomID+'/players/'+player.nick).onDisconnect().remove();
-    db.ref('rooms/'+roomID+'/players').on('value', s => players = s.val() || {});
-    db.ref('rooms/'+roomID+'/flags').on('value', s => flags = s.val() || {});
-    db.ref('rooms/'+roomID+'/buildings').on('value', s => buildings = s.val() || {});
-    db.ref('rooms/'+roomID+'/worldItems').on('value', s => worldItems = s.val() || {});
+    document.getElementById('lobby').style.display = 'none';
+    document.getElementById('gui').style.display = 'flex';
+    document.getElementById('hotbar').style.display = 'flex';
+    
+    db.ref('rooms/'+room+'/players/'+me.nick).onDisconnect().remove();
+    db.ref('rooms/'+room+'/players').on('value', s => players = s.val() || {});
+    db.ref('rooms/'+room+'/flags').on('value', s => flags = s.val() || {});
+    db.ref('rooms/'+room+'/buildings').on('value', s => buildings = s.val() || {});
+    db.ref('rooms/'+room+'/items').on('value', s => {
+        if(!s.exists()) spawnRes(); else items = s.val() || {};
+    });
 
-    setInterval(survivalCycle, 2000);
+    setInterval(() => {
+        let farms = 0, houses = 0;
+        for(let id in buildings) if(buildings[id].owner === me.nick) {
+            if(buildings[id].type === 'farm') farms++; if(buildings[id].type === 'house') houses++;
+        }
+        me.food += farms * 5;
+        if(me.food > 0) {
+            me.food -= (me.pop * 0.12 + me.army * 0.2);
+            if(me.pop < 10 + houses * 15) me.pop += 0.2;
+        } else { me.pop -= 0.5; me.army *= 0.8; if(me.pop < 1) me.pop = 1; }
+        db.ref('rooms/'+room+'/players/'+me.nick).set(me);
+    }, 3000);
+
     requestAnimationFrame(loop);
 }
 
-function survivalCycle() {
-    if(player.food > 0) { player.food -= player.pop * 0.2; player.pop += 0.1; } 
-    else { player.pop -= 0.5; if(player.pop < 0) player.pop = 0; }
-    db.ref('rooms/'+roomID+'/players/'+player.nick).set(player);
+function spawnRes() {
+    let res = {};
+    for(let i=0; i<100; i++) {
+        let type = Math.random();
+        res['r'+i] = { x: Math.random()*mapSize, y: Math.random()*mapSize, type: type > 0.6 ? 't' : (type > 0.3 ? 's' : 'f') };
+    }
+    db.ref('rooms/'+room+'/items').set(res);
 }
 
-function action(type) {
-    if(type === 'flag' && player.wood >= 50) { db.ref('rooms/'+roomID+'/flags/'+Date.now()).set({x:player.x, y:player.y, color:player.color}); player.wood -= 50; }
-    if(type === 'house' && player.wood >= 100) { db.ref('rooms/'+roomID+'/buildings/'+Date.now()).set({x:player.x, y:player.y, color:player.color}); player.wood -= 100; player.pop += 5; }
-    if(type === 'harvest') harvest();
-}
-
-function harvest() {
-    for(let id in worldItems) {
-        let it = worldItems[id];
-        if(Math.hypot(player.x-it.x, player.y-it.y) < 60) {
-            if(it.type === 'tree') player.wood += 5; else player.food += 10;
-            return;
+function act(type) {
+    if(type === 'mine') {
+        for(let id in items) {
+            let it = items[id];
+            if(Math.hypot(me.x - it.x, me.y - it.y) < 70) {
+                if(it.type === 't') me.wood += 20; else if(it.type === 's') me.stone += 15; else me.food += 25;
+                db.ref('rooms/'+room+'/items/'+id).remove();
+                setTimeout(() => db.ref('rooms/'+room+'/items/'+id).set({x:Math.random()*mapSize, y:Math.random()*mapSize, type:it.type}), 20000);
+                return;
+            }
         }
+    }
+    if(type === 'flag' && me.wood >= 50) {
+        db.ref('rooms/'+room+'/flags/'+Date.now()).set({x:me.x, y:me.y, color:me.color, owner:me.nick});
+        me.wood -= 50;
+    }
+    if(type === 'house' && me.wood >= 80 && me.stone >= 30) {
+        db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'house', owner:me.nick, color:me.color});
+        me.wood -= 80; me.stone -= 30;
+    }
+    if(type === 'farm' && me.wood >= 40 && me.stone >= 60) {
+        db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'farm', owner:me.nick, color:me.color});
+        me.wood -= 40; me.stone -= 60;
+    }
+    if(type === 'army' && me.food >= 50 && me.wood >= 20) {
+        me.army += 1; me.food -= 50; me.wood -= 20;
     }
 }
 
 let keys = {};
 window.addEventListener('keydown', e => {
     keys[e.code] = true;
-    if(e.code === 'KeyE') action('flag');
-    if(e.code === 'KeyB') action('house');
-    if(e.code === 'KeyF') action('harvest');
+    if(e.code === 'KeyF') act('mine'); if(e.code === 'KeyE') act('flag');
+    if(e.code === 'KeyH') act('house'); if(e.code === 'KeyB') act('farm');
+    if(e.code === 'KeyR') act('army');
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
 function loop() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    if(keys['KeyW']) player.y -= 8; if(keys['KeyS']) player.y += 8;
-    if(keys['KeyA']) player.x -= 8; if(keys['KeyD']) player.x += 8;
-    if(keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD']) db.ref('rooms/'+roomID+'/players/'+player.nick).set(player);
+    if(keys['KeyW']) me.y -= 7; if(keys['KeyS']) me.y += 7;
+    if(keys['KeyA']) me.x -= 7; if(keys['KeyD']) me.x += 7;
+    if(keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD']) db.ref('rooms/'+room+'/players/'+me.nick).set(me);
 
     ctx.save();
-    ctx.translate(canvas.width/2 - player.x, canvas.height/2 - player.y);
-    
-    ctx.strokeStyle = "#555"; ctx.strokeRect(0,0,mapSize,mapSize);
+    ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
 
-    for(let id in flags) { ctx.fillStyle = flags[id].color.replace('50%)','10%)'); ctx.fillRect(flags[id].x-200, flags[id].y-200, 400, 400); }
-    for(let id in worldItems) { 
-        let it = worldItems[id]; ctx.fillStyle = it.type==='tree'?'#27ae60':'#e67e22'; 
-        ctx.beginPath(); ctx.arc(it.x, it.y, 20, 0, 7); ctx.fill(); 
+    for(let id in flags) {
+        let f = flags[id]; ctx.fillStyle = f.color.replace('50%)','15%)');
+        ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
+        ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-35, 4, 35);
     }
-    for(let id in buildings) { ctx.fillStyle = "#8e44ad"; ctx.fillRect(buildings[id].x-25, buildings[id].y-25, 50, 50); }
+    for(let id in items) {
+        let it = items[id]; ctx.fillStyle = it.type==='t'?'#2ecc71':(it.type==='s'?'#95a5a6':'#f1c40f');
+        ctx.beginPath(); ctx.arc(it.x, it.y, 15, 0, 7); ctx.fill();
+    }
+    for(let id in buildings) {
+        let b = buildings[id]; ctx.fillStyle = b.type==='house'?'#e67e22':'#f1c40f';
+        ctx.fillRect(b.x-25, b.y-25, 50, 50);
+    }
     for(let id in players) {
         let p = players[id]; ctx.fillStyle = p.color; ctx.fillRect(p.x-15, p.y-15, 30, 30);
-        ctx.fillStyle = "white"; ctx.fillText(p.nick + " (👥"+Math.floor(p.pop)+")", p.x-20, p.y-25);
+        ctx.fillStyle = "white"; ctx.font="bold 14px sans-serif"; ctx.fillText(p.nick, p.x-20, p.y-25);
     }
     ctx.restore();
 
-    // Minimap
-    mCtx.clearRect(0,0,150,150);
-    for(let id in players) {
-        mCtx.fillStyle = players[id].color;
-        mCtx.fillRect((players[id].x/mapSize)*150, (players[id].y/mapSize)*150, 4, 4);
+    // Туман войны
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(canvas.width/2, canvas.height/2, 250, 0, Math.PI*2);
+    for(let id in flags) if(flags[id].owner === me.nick) {
+        ctx.moveTo(flags[id].x - me.x + canvas.width/2, flags[id].y - me.y + canvas.height/2);
+        ctx.arc(flags[id].x - me.x + canvas.width/2, flags[id].y - me.y + canvas.height/2, 350, 0, Math.PI*2);
     }
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
 
-    document.getElementById('r_wood').innerText = Math.floor(player.wood);
-    document.getElementById('r_food').innerText = Math.floor(player.food);
-    document.getElementById('r_pop').innerText = Math.floor(player.pop);
+    document.getElementById('r_wood').innerText = Math.floor(me.wood);
+    document.getElementById('r_stone').innerText = Math.floor(me.stone);
+    document.getElementById('r_food').innerText = Math.floor(me.food);
+    document.getElementById('r_pop').innerText = Math.floor(me.pop);
+    document.getElementById('r_army').innerText = Math.floor(me.army);
     requestAnimationFrame(loop);
 }
 </script>
