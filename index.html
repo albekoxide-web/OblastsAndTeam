@@ -1,19 +1,23 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Empires</title>
+    <title>Oblasts & Team: Pro</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; color: white; touch-action: none; }
         #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1a1a2e, #000); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .win { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px; backdrop-filter: blur(10px); text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 300px; }
+        .win { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px; backdrop-filter: blur(15px); text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 300px; }
         input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; text-align: center; }
-        button { width: 100%; padding: 15px; background: #00ff88; color: #000; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button { width: 100%; padding: 15px; background: #00ff88; color: #000; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        button:hover { transform: scale(1.05); background: #00cc6a; }
         #gui { position: absolute; top: 20px; left: 20px; display: none; flex-direction: column; gap: 8px; z-index: 500; pointer-events: none; }
-        .stat { background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 10px; border-left: 3px solid #00ff88; font-weight: bold; }
+        .stat { background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 10px; border-left: 4px solid #00ff88; font-weight: bold; display: flex; gap: 10px; }
         #hotbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 500; }
-        .slot { width: 60px; height: 60px; background: rgba(0,0,0,0.8); border-radius: 12px; border: 1px solid #444; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; pointer-events: auto; }
+        .slot { width: 60px; height: 60px; background: rgba(0,0,0,0.8); border-radius: 15px; border: 1px solid #444; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; transition: 0.2s; }
+        .slot:hover { border-color: #00ff88; transform: translateY(-5px); }
+        .slot span { font-size: 24px; }
+        .slot small { font-size: 9px; color: #aaa; }
         canvas { display: block; }
     </style>
 </head>
@@ -21,10 +25,11 @@
 
 <div id="lobby">
     <div class="win">
-        <h1>OBLASTS</h1>
-        <input type="text" id="nick" placeholder="Имя">
-        <input type="text" id="room" placeholder="Код комнаты">
-        <button onclick="start()">ИГРАТЬ</button>
+        <h1 style="margin-top:0">OBLASTS</h1>
+        <p style="font-size:12px; opacity:0.6">ONLINE STRATEGY</p>
+        <input type="text" id="nick" placeholder="Твій Нік">
+        <input type="text" id="room" placeholder="Код світу (напр. 1)">
+        <button onclick="start()">УВІЙТИ В ГРУ</button>
     </div>
 </div>
 
@@ -32,14 +37,14 @@
     <div class="stat">🌲 <span id="r_wood">0</span></div>
     <div class="stat">🪨 <span id="r_stone">0</span></div>
     <div class="stat">🍎 <span id="r_food">0</span></div>
-    <div class="stat">🌟 XP: <span id="r_xp">0</span></div>
+    <div class="stat">🌟 <span id="r_xp">0</span> XP</div>
 </div>
 
 <div id="hotbar">
-    <div class="slot" onclick="act('mine')">⛏️</div>
-    <div class="slot" onclick="act('flag')">🚩</div>
-    <div class="slot" onclick="act('house')">🏠</div>
-    <div class="slot" onclick="act('farm')">🌾</div>
+    <div class="slot" onclick="act('mine')"><span>⛏️</span><small>F</small></div>
+    <div class="slot" onclick="act('flag')"><span>🚩</span><small>E</small></div>
+    <div class="slot" onclick="act('house')"><span>🏠</span><small>H</small></div>
+    <div class="slot" onclick="act('farm')"><span>🌾</span><small>B</small></div>
 </div>
 
 <canvas id="game"></canvas>
@@ -48,7 +53,6 @@
 <script src="https://gstatic.com"></script>
 
 <script>
-// ТВОЙ КОНФИГ (ключи albekoxide)
 const firebaseConfig = {
   apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
   authDomain: "://firebaseapp.com",
@@ -64,15 +68,16 @@ const db = firebase.database();
 
 let me = { x: 2500, y: 2500, wood: 100, stone: 50, food: 100, pop: 1, xp: 0, nick: "", color: "" };
 let players = {}, flags = {}, items = {}, buildings = {}, room = "", mapS = 5000;
+let cam = { x: 2500, y: 2500 };
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
 function start() {
     const n = document.getElementById('nick').value;
-    room = document.getElementById('room').value.toUpperCase() || "WAR";
-    if(!n) return alert("Введите имя!");
+    room = document.getElementById('room').value.toUpperCase() || "LOBBY";
+    if(!n) return alert("Введи нік!");
     me.nick = n;
-    me.color = `hsl(${Math.random()*360}, 70%, 50%)`;
+    me.color = `hsl(${Math.random()*360}, 75%, 55%)`;
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('gui').style.display = 'flex';
     document.getElementById('hotbar').style.display = 'flex';
@@ -82,81 +87,96 @@ function start() {
     db.ref('rooms/'+room+'/flags').on('value', s => flags = s.val() || {});
     db.ref('rooms/'+room+'/items').on('value', s => { if(!s.exists()) spawn(); else items = s.val() || {}; });
 
-    setInterval(() => {
-        let f = 0, h = 0;
-        for(let id in buildings) if(buildings[id].owner === me.nick) { if(buildings[id].type==='farm') f++; else h++; }
-        me.food += f * 5;
-        if(me.food > 0) { me.food -= (me.pop * 0.15); if(me.pop < 10 + h*15) me.pop += 0.2; }
-        else { me.pop -= 0.5; if(me.pop < 1) me.pop = 1; }
-        db.ref('rooms/'+room+'/players/'+me.nick).set(me);
-    }, 3000);
+    setInterval(tick, 3000);
     requestAnimationFrame(loop);
 }
 
 function spawn() {
     let r = {};
-    for(let i=0; i<100; i++) {
+    for(let i=0; i<120; i++) {
         let t = Math.random();
-        r['i'+i] = { x: Math.random()*mapS, y: Math.random()*mapS, type: t>0.6?'t':(t>0.3?'s':'f') };
+        r['i'+i] = { x: Math.random()*mapS, y: Math.random()*mapS, type: t>0.7?'t':(t>0.4?'s':'f') };
     }
     db.ref('rooms/'+room+'/items').set(r);
+}
+
+function tick() {
+    let f = 0, h = 0;
+    for(let id in buildings) if(buildings[id].owner === me.nick) { if(buildings[id].type==='farm') f++; else h++; }
+    me.food += f * 6;
+    if(me.food > 0) { me.food -= (me.pop*0.15); if(me.pop < 10 + h*20) me.pop += 0.3; }
+    else { me.pop -= 0.6; if(me.pop < 1) me.pop = 1; }
+    db.ref('rooms/'+room+'/players/'+me.nick).set(me);
 }
 
 function act(type) {
     if(type === 'mine') {
         for(let id in items) {
             let it = items[id];
-            if(Math.hypot(me.x - it.x, me.y - it.y) < 70) {
-                if(it.type === 't') me.wood += 20; else if(it.type === 's') me.stone += 15; else me.food += 25;
+            if(Math.hypot(me.x - it.x, me.y - it.y) < 80) {
+                if(it.type === 't') me.wood += 25; else if(it.type === 's') me.stone += 20; else me.food += 30;
                 me.xp += 10;
                 db.ref('rooms/'+room+'/items/'+id).remove();
-                setTimeout(()=>db.ref('rooms/'+room+'/items/'+id).set({x:Math.random()*mapS, y:Math.random()*mapS, type:it.type}), 20000);
+                setTimeout(()=>db.ref('rooms/'+room+'/items/'+id).set({x:Math.random()*mapS, y:Math.random()*mapS, type:it.type}), 15000);
                 return;
             }
         }
     }
     if(type==='flag' && me.wood>=50) { db.ref('rooms/'+room+'/flags/'+Date.now()).set({x:me.x, y:me.y, color:me.color, owner:me.nick}); me.wood-=50; me.xp+=50; }
+    if(type==='house' && me.wood>=100 && me.stone>=40) { db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'house', owner:me.nick, color:me.color}); me.wood-=100; me.stone-=40; }
+    if(type==='farm' && me.wood>=50 && me.stone>=80) { db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'farm', owner:me.nick, color:me.color}); me.wood-=50; me.stone-=80; }
 }
 
 let keys = {};
-window.addEventListener('keydown', e => {
+window.addEventListener('keydown', e => { 
     keys[e.code] = true;
-    if(e.code==='KeyF') act('mine');
-    if(e.code==='KeyE') act('flag');
+    if(e.code==='KeyF') act('mine'); if(e.code==='KeyE') act('flag');
+    if(e.code==='KeyH') act('house'); if(e.code==='KeyB') act('farm');
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
 function loop() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    if(keys['KeyW']) me.y -= 7; if(keys['KeyS']) me.y += 7;
-    if(keys['KeyA']) me.x -= 7; if(keys['KeyD']) me.x += 7;
-    if(keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD']) db.ref('rooms/'+room+'/players/'+me.nick).set(me);
+    if(keys['KeyW']) me.y -= 8; if(keys['KeyS']) me.y += 8;
+    if(keys['KeyA']) me.x -= 8; if(keys['KeyD']) me.x += 8;
+    
+    cam.x += (me.x - cam.x) * 0.1;
+    cam.y += (me.y - cam.y) * 0.1;
+    
+    if(keys['KeyW']||keys['KeyS']||keys['KeyA']||keys['KeyD']) db.ref('rooms/'+room+'/players/'+me.nick).set(me);
 
     ctx.save();
-    ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
+    ctx.translate(canvas.width/2 - cam.x, canvas.height/2 - cam.y);
+
     for(let id in flags) {
-        let f = flags[id]; ctx.fillStyle = f.color.replace('50%)','15%)');
-        ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
-        ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-35, 4, 35);
+        let f = flags[id]; ctx.fillStyle = f.color.replace('55%)','12%)');
+        ctx.beginPath(); ctx.arc(f.x, f.y, 350, 0, 7); ctx.fill();
+        ctx.fillStyle = f.color; ctx.fillRect(f.x-3, f.y-40, 6, 40);
     }
     for(let id in items) {
-        let it = items[id]; ctx.fillStyle = it.type==='t'?'#2ecc71':(it.type==='s'?'#95a5a6':'#f1c40f');
-        ctx.beginPath(); ctx.arc(it.x, it.y, 15, 0, 7); ctx.fill();
+        let it = items[id]; ctx.fillStyle = it.type==='t'?'#00ff88':(it.type==='s'?'#777':'#ffaa00');
+        ctx.beginPath(); ctx.arc(it.x, it.y, 18, 0, 7); ctx.fill();
+    }
+    for(let id in buildings) {
+        let b = buildings[id]; ctx.fillStyle = b.type==='house'?'#ff4400':'#ffcc00';
+        ctx.fillRect(b.x-30, b.y-30, 60, 60); ctx.strokeStyle="white"; ctx.strokeRect(b.x-30, b.y-30, 60, 60);
     }
     for(let id in players) {
-        let p = players[id]; ctx.fillStyle = p.color; ctx.fillRect(p.x-15, p.y-15, 30, 30);
-        ctx.fillStyle = "white"; ctx.font="14px Arial"; ctx.fillText(p.nick, p.x-20, p.y-25);
+        let p = players[id]; ctx.fillStyle = p.color; 
+        ctx.beginPath(); ctx.arc(p.x, p.y, 20, 0, 7); ctx.fill();
+        ctx.fillStyle = "white"; ctx.font="bold 16px sans-serif"; ctx.textAlign="center";
+        ctx.fillText(p.nick, p.x, p.y - 30);
     }
     ctx.restore();
 
-    // Простой туман войны
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillStyle = "rgba(0,0,0,0.85)";
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
-    ctx.arc(canvas.width/2, canvas.height/2, 250, 0, Math.PI*2);
+    ctx.arc(canvas.width/2 + (me.x - cam.x), canvas.height/2 + (me.y - cam.y), 300, 0, Math.PI*2);
     for(let id in flags) if(flags[id].owner === me.nick) {
-        ctx.moveTo(flags[id].x - me.x + canvas.width/2, flags[id].y - me.y + canvas.height/2);
-        ctx.arc(flags[id].x - me.x + canvas.width/2, flags[id].y - me.y + canvas.height/2, 350, 0, Math.PI*2);
+        let fx = flags[id].x - cam.x + canvas.width/2;
+        let fy = flags[id].y - cam.y + canvas.height/2;
+        ctx.moveTo(fx, fy); ctx.arc(fx, fy, 400, 0, Math.PI*2);
     }
     ctx.fill();
     ctx.globalCompositeOperation = 'source-over';
