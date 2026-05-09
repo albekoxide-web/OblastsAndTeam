@@ -5,29 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Oblasts & Team: Empires</title>
     <style>
-        :root { --accent: #2ecc71; --bg: rgba(20, 20, 30, 0.85); --border: rgba(255, 255, 255, 0.1); }
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: none; color: white; }
-        
-        /* Меню входа */
-        #lobby { position: absolute; inset: 0; background: radial-gradient(circle at center, #1e3c72 0%, #111 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .win { background: var(--bg); padding: 30px; border-radius: 20px; text-align: center; width: 85%; max-width: 350px; backdrop-filter: blur(10px); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; text-align: center; }
-        button.start-btn { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        button.start-btn:hover { background: #27ae60; transform: translateY(-2px); }
-
-        /* Игровой интерфейс (Верхний левый угол) */
+        :root { --accent: #2ecc71; --bg: rgba(20, 20, 30, 0.9); --border: rgba(255, 255, 255, 0.1); }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; touch-action: none; color: white; }
+        #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1e3c72 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .win { background: var(--bg); padding: 30px; border-radius: 20px; text-align: center; width: 85%; max-width: 350px; backdrop-filter: blur(10px); border: 1px solid var(--border); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; text-align: center; font-size: 16px; }
+        button.start-btn { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 18px; transition: 0.3s; }
         #gui { position: absolute; top: 20px; left: 20px; display: none; flex-direction: column; gap: 8px; pointer-events: none; z-index: 500; }
-        .res-card { background: var(--bg); padding: 8px 15px; border-radius: 12px; backdrop-filter: blur(5px); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; min-width: 120px; }
-        .res-card span { font-weight: bold; font-size: 18px; }
-
-        /* Панель способностей (Снизу) */
-        #hotbar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: none; gap: 12px; z-index: 500; }
-        .skill-slot { position: relative; width: 60px; height: 60px; background: var(--bg); border-radius: 15px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; pointer-events: auto; }
-        .skill-slot:hover { border-color: var(--accent); background: rgba(46, 204, 113, 0.2); }
-        .skill-slot .key-hint { position: absolute; top: -10px; right: -10px; background: #e74c3c; color: white; font-size: 10px; padding: 2px 6px; border-radius: 5px; font-weight: bold; }
-        .skill-slot .tooltip { position: absolute; bottom: 75px; background: var(--bg); padding: 10px; border-radius: 8px; font-size: 12px; width: 140px; opacity: 0; pointer-events: none; transition: 0.3s; border: 1px solid var(--border); text-align: center; }
-        .skill-slot:hover .tooltip { opacity: 1; bottom: 85px; }
-
+        .res-card { background: var(--bg); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+        #hotbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 500; }
+        .slot { width: 55px; height: 55px; background: var(--bg); border-radius: 12px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; pointer-events: auto; position: relative; }
+        .slot:hover { border-color: var(--accent); }
+        .tooltip { position: absolute; bottom: 70px; background: #000; padding: 5px; border-radius: 5px; font-size: 10px; opacity: 0; pointer-events: none; width: 100px; text-align: center; transition: 0.2s; }
+        .slot:hover .tooltip { opacity: 1; }
         canvas { display: block; }
     </style>
 </head>
@@ -35,28 +25,25 @@
 
 <div id="lobby">
     <div class="win">
-        <h1 style="margin-top:0">Oblasts & Team</h1>
-        <p style="opacity:0.7">Создайте свою империю</p>
-        <input type="text" id="nick" placeholder="Твой Ник">
-        <input type="text" id="room" placeholder="Код комнаты (напр. 555)">
-        <button class="start-btn" onclick="init()">ВОЙТИ В МИР</button>
+        <h1>Oblasts & Team</h1>
+        <input type="text" id="nick" placeholder="Твій Нік">
+        <input type="text" id="room" placeholder="Код світу">
+        <button class="start-btn" onclick="init()">УВІЙТИ</button>
     </div>
 </div>
 
 <div id="gui">
-    <div class="res-card"><span style="color:#2ecc71">🌲</span> <span id="r_wood">0</span></div>
-    <div class="res-card"><span style="color:#95a5a6">🪨</span> <span id="r_stone">0</span></div>
-    <div class="res-card"><span style="color:#f1c40f">🍎</span> <span id="r_food">0</span></div>
-    <div class="res-card"><span style="color:#3498db">👥</span> <span id="r_pop">0</span></div>
-    <div class="res-card"><span style="color:#e74c3c">⚔️</span> <span id="r_army">0</span></div>
+    <div class="res-card">🌲 <span id="r_wood">0</span></div>
+    <div class="res-card">🪨 <span id="r_stone">0</span></div>
+    <div class="res-card">🍎 <span id="r_food">0</span></div>
+    <div class="res-card">👥 <span id="r_pop">0</span></div>
 </div>
 
 <div id="hotbar">
-    <div class="skill-slot" onclick="act('mine')">⛏️<div class="key-hint">F</div><div class="tooltip"><b>Сбор ресурсов</b><br>Добыть дерево, камень или еду рядом</div></div>
-    <div class="skill-slot" onclick="act('flag')">🚩<div class="key-hint">E</div><div class="tooltip"><b>Флаг (50🌲)</b><br>Захват территории и обзор карты</div></div>
-    <div class="skill-slot" onclick="act('house')">🏠<div class="key-hint">H</div><div class="tooltip"><b>Хижина (80🌲 30🪨)</b><br>Увеличивает лимит населения</div></div>
-    <div class="skill-slot" onclick="act('farm')">🌾<div class="key-hint">B</div><div class="tooltip"><b>Ферма (40🌲 60🪨)</b><br>Автоматически дает +5 еды</div></div>
-    <div class="skill-slot" onclick="act('army')">⚔️<div class="key-hint">R</div><div class="tooltip"><b>Армия (50🍎 20🌲)</b><br>Нанять 1 солдата для защиты</div></div>
+    <div class="slot" onclick="act('mine')">⛏️<div class="tooltip">Збір (F)</div></div>
+    <div class="slot" onclick="act('flag')">🚩<div class="tooltip">Прапор (E)</div></div>
+    <div class="slot" onclick="act('house')">🏠<div class="tooltip">Хата (H)</div></div>
+    <div class="slot" onclick="act('farm')">🌾<div class="tooltip">Ферма (B)</div></div>
 </div>
 
 <canvas id="game"></canvas>
@@ -65,7 +52,6 @@
 <script src="https://gstatic.com"></script>
 
 <script>
-// ТВІЙ КОНФІГ FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
   authDomain: "://firebaseapp.com",
@@ -79,7 +65,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let me = { x: 2500, y: 2500, wood: 100, stone: 50, food: 100, pop: 1, army: 0, nick: "", color: "" };
+let me = { x: 2500, y: 2500, wood: 100, stone: 50, food: 100, pop: 1, nick: "", color: "" };
 let players = {}, flags = {}, items = {}, buildings = {}, room = "", mapSize = 5000;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -87,7 +73,7 @@ const ctx = canvas.getContext('2d');
 function init() {
     const n = document.getElementById('nick').value;
     room = document.getElementById('room').value.toUpperCase() || "WAR";
-    if(!n) return alert("Введите ник!");
+    if(!n) return alert("Введи нік!");
     me.nick = n;
     me.color = `hsl(${Math.random()*360}, 70%, 50%)`;
     
@@ -110,9 +96,9 @@ function init() {
         }
         me.food += farms * 5;
         if(me.food > 0) {
-            me.food -= (me.pop * 0.12 + me.army * 0.2);
+            me.food -= (me.pop * 0.12);
             if(me.pop < 10 + houses * 15) me.pop += 0.2;
-        } else { me.pop -= 0.5; me.army *= 0.8; if(me.pop < 1) me.pop = 1; }
+        } else { me.pop -= 0.5; if(me.pop < 1) me.pop = 1; }
         db.ref('rooms/'+room+'/players/'+me.nick).set(me);
     }, 3000);
 
@@ -152,9 +138,6 @@ function act(type) {
         db.ref('rooms/'+room+'/buildings/'+Date.now()).set({x:me.x, y:me.y, type:'farm', owner:me.nick, color:me.color});
         me.wood -= 40; me.stone -= 60;
     }
-    if(type === 'army' && me.food >= 50 && me.wood >= 20) {
-        me.army += 1; me.food -= 50; me.wood -= 20;
-    }
 }
 
 let keys = {};
@@ -162,7 +145,6 @@ window.addEventListener('keydown', e => {
     keys[e.code] = true;
     if(e.code === 'KeyF') act('mine'); if(e.code === 'KeyE') act('flag');
     if(e.code === 'KeyH') act('house'); if(e.code === 'KeyB') act('farm');
-    if(e.code === 'KeyR') act('army');
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
@@ -194,8 +176,7 @@ function loop() {
     }
     ctx.restore();
 
-    // Туман войны
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
     ctx.arc(canvas.width/2, canvas.height/2, 250, 0, Math.PI*2);
@@ -210,7 +191,6 @@ function loop() {
     document.getElementById('r_stone').innerText = Math.floor(me.stone);
     document.getElementById('r_food').innerText = Math.floor(me.food);
     document.getElementById('r_pop').innerText = Math.floor(me.pop);
-    document.getElementById('r_army').innerText = Math.floor(me.army);
     requestAnimationFrame(loop);
 }
 </script>
