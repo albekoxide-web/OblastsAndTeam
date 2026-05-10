@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Ultimate Empire</title>
+    <title>Oblasts & Team: Empires</title>
     
-    <!-- 1. ЗАГРУЖАЕМ БИБЛИОТЕКИ СТРОГО ЗДЕСЬ (В HEAD) -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
+    <!-- ЗМІНЕНО ПОСИЛАННЯ НА БІЛЬШ СТАБІЛЬНІ -->
+    <script src="https://unpkg.com"></script>
+    <script src="https://unpkg.com"></script>
 
     <style>
         :root { --p: #00ff88; --s: #00d4ff; --bg: #050508; }
@@ -19,11 +19,10 @@
         .btn-main { background: linear-gradient(45deg, var(--p), var(--s)); color: #000; }
         #hud { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 5px; z-index: 500; pointer-events: none; }
         .stat { background: rgba(0,0,0,0.7); padding: 6px 15px; border-radius: 10px; border-left: 4px solid var(--p); font-size: 14px; font-weight: bold; }
-        #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; border: 1px solid rgba(255,255,255,0.2); }
-        #joy-stick { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
-        #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 12px; z-index: 600; }
-        .act-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; position: relative; }
-        .act-btn span { position: absolute; bottom: -18px; font-size: 8px; color: var(--p); font-weight: bold; text-align: center; width: 80px; }
+        #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 110px; height: 110px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; border: 1px solid rgba(255,255,255,0.2); }
+        #joy-stick { position: absolute; top: 30px; left: 30px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
+        #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 15px; z-index: 600; }
+        .act-btn { width: 65px; height: 65px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; }
         canvas { display: block; }
     </style>
 </head>
@@ -32,24 +31,24 @@
 <div id="lobby">
     <div id="m-start" class="window">
         <h1 style="color:var(--p); letter-spacing:5px;">OBLASTS</h1>
-        <input type="text" id="nick" placeholder="ТВОЙ НИК">
-        <button class="btn btn-main" onclick="showSettings()">СОЗДАТЬ МИР</button>
-        <input type="text" id="joinCode" placeholder="КОД КОМНАТЫ">
-        <button class="btn" style="background:#333; color:#fff" onclick="joinGame()">ПРИСОЕДИНИТЬСЯ</button>
+        <input type="text" id="nick" placeholder="ТВІЙ НІК">
+        <button class="btn btn-main" onclick="showSettings()">СТВОРИТИ СВІТ</button>
+        <input type="text" id="joinCode" placeholder="КОД КІМНАТИ">
+        <button class="btn" style="background:#333; color:#fff" onclick="joinGame()">ПРИЄДНАТИСЯ</button>
     </div>
     <div id="m-settings" class="window" style="display:none">
-        <h3>НАСТРОЙКИ</h3>
+        <h3>НАЛАШТУВАННЯ</h3>
         <select id="mapSize"><option value="4000">4000x4000</option><option value="8000" selected>8000x8000</option></select>
         <button class="btn btn-main" onclick="finalizeCreate()">ГОТОВО</button>
     </div>
     <div id="m-code" class="window" style="display:none">
-        <p>КОД КОМНАТЫ:</p>
-        <h1 id="shareCode" style="color:var(--p); letter-spacing:5px;">XXXX</h1>
-        <button class="btn btn-main" onclick="enterWorld()">НАЧАТЬ</button>
+        <p>КОД КІМНАТИ:</p>
+        <h1 id="shareCode" style="color:var(--p); letter-spacing:8px;">XXXX</h1>
+        <button class="btn btn-main" onclick="enterWorld()">ПОЧАТИ ГРУ</button>
     </div>
 </div>
 
-<div id="hud">
+<div id="gui">
     <div class="stat">🌲 <span id="r_wood">0</span></div>
     <div class="stat">🪨 <span id="r_stone">0</span></div>
     <div class="stat">🍎 <span id="r_food">0</span></div>
@@ -58,14 +57,13 @@
 
 <div id="joy-bg"><div id="joy-stick"></div></div>
 <div id="actions">
-    <div class="act-btn" onclick="act('mine')">⛏️<span>СБОР</span></div>
-    <div class="act-btn" onclick="act('flag')">🚩<span>ОБЛАСТЬ</span></div>
+    <div class="act-btn" onclick="act('mine')">⛏️</div>
+    <div class="act-btn" onclick="act('flag')">🚩</div>
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
-// 2. КОНФИГ ТВОЕГО ПРОЕКТА
 const firebaseConfig = {
   apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
   authDomain: "://firebaseapp.com",
@@ -76,45 +74,39 @@ const firebaseConfig = {
   appId: "1:1070668055977:web:01886461edd6a9cedf30b8"
 };
 
-// 3. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-let db;
-let roomID = ""; 
-let mapLimit = 4000;
-let me = { x: 0, y: 0, wood: 100, stone: 50, food: 100, pop: 1, nick: "", color: "" };
+let db, roomID = "", mapLimit = 4000;
+let me = { x: 0, y: 0, wood: 150, stone: 50, food: 100, pop: 1, nick: "", color: "" };
 let players = {}, flags = {}, items = {};
 let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-// 4. ИНИЦИАЛИЗАЦИЯ ПОСЛЕ ЗАГРУЗКИ ОКНА
+// ПЕРЕВІРКА ПЕРЕД ЗАПУСКОМ
 window.onload = function() {
     if (typeof firebase !== 'undefined') {
         firebase.initializeApp(firebaseConfig);
         db = firebase.database();
-        console.log("Firebase готов!");
     } else {
-        alert("Ошибка: Firebase не загрузился. Проверь интернет или AdBlock.");
+        alert("Помилка завантаження Firebase. Вимкни AdBlock та онови сторінку.");
     }
 };
 
 function showSettings() {
-    if(!document.getElementById('nick').value) return alert("ВВЕДИ НИК!");
-    document.getElementById('m-start').style.display = 'none';
-    document.getElementById('m-settings').style.display = 'block';
+    if(!document.getElementById('nick').value) return alert("ВВЕДИ НІК!");
+    document.getElementById('m-start').style.display='none';
+    document.getElementById('m-settings').style.display='block';
 }
 
 function finalizeCreate() {
-    if(!db) return alert("Подожди загрузки сервера...");
+    if(!db) return alert("Зачекай, база даних ще не готова!");
     roomID = Math.random().toString(36).substring(2, 6).toUpperCase();
     mapLimit = parseInt(document.getElementById('mapSize').value);
-    
     let res = {};
-    for(let i=0; i<120; i++) {
+    for(let i=0; i<100; i++) {
         let t = Math.random();
         res['r'+i] = { x: Math.random()*mapLimit, y: Math.random()*mapLimit, type: t>0.5?'t':'s' };
     }
-    
     db.ref('rooms/' + roomID).set({ settings: { limit: mapLimit }, items: res }).then(() => {
         document.getElementById('m-settings').style.display='none';
         document.getElementById('m-code').style.display='block';
@@ -125,11 +117,10 @@ function finalizeCreate() {
 function joinGame() {
     const nick = document.getElementById('nick').value;
     const code = document.getElementById('joinCode').value.toUpperCase();
-    if(!nick || !code) return alert("ЗАПОЛНИ ПОЛЯ!");
-    
+    if(!nick || !code || !db) return alert("Почекай завантаження або заповни поля!");
     db.ref('rooms/' + code).once('value', s => {
         if(s.exists()) { roomID = code; mapLimit = s.val().settings.limit; enterWorld(); }
-        else alert("КОД НЕВЕРНЫЙ");
+        else alert("КОД НЕВІРНИЙ");
     });
 }
 
@@ -138,10 +129,9 @@ function enterWorld() {
     me.color = `hsl(${Math.random()*360}, 75%, 55%)`;
     me.x = me.y = mapLimit / 2;
     document.getElementById('lobby').style.display = 'none';
-    document.getElementById('hud').style.display = 'flex';
+    document.getElementById('gui').style.display = 'flex';
     document.getElementById('joy-bg').style.display = 'block';
     document.getElementById('actions').style.display = 'flex';
-    
     db.ref('rooms/'+roomID+'/players/'+me.nick).onDisconnect().remove();
     db.ref('rooms/'+roomID+'/players').on('value', s => players = s.val() || {});
     db.ref('rooms/'+roomID+'/flags').on('value', s => flags = s.val() || {});
@@ -167,33 +157,31 @@ function act(type) {
 }
 
 // Джойстик
-const jBg = document.getElementById('joy-bg');
-const jSt = document.getElementById('joy-stick');
+const jBg = document.getElementById('joy-bg'), jSt = document.getElementById('joy-stick');
 function handleStart(cx, cy) { joy.active = true; joy.startX = cx; joy.startY = cy; }
 function handleMove(cx, cy) {
     if(!joy.active) return;
-    let dx = cx - joy.startX; let dy = cy - joy.startY;
+    let dx = cx - joy.startX, dy = cy - joy.startY;
     let dist = Math.min(Math.hypot(dx, dy), 40);
     let angle = Math.atan2(dy, dx);
     joy.x = Math.cos(angle) * (dist / 40); joy.y = Math.sin(angle) * (dist / 40);
     jSt.style.transform = `translate(${joy.x*40}px, ${joy.y*40}px)`;
 }
 function handleEnd() { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; }
-
 jBg.addEventListener('touchstart', e => handleStart(e.touches[0].clientX, e.touches[0].clientY));
 jBg.addEventListener('mousedown', e => handleStart(e.clientX, e.clientY));
 window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY));
 window.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
-window.addEventListener('touchend', handleEnd);
-window.addEventListener('mouseup', handleEnd);
+window.addEventListener('touchend', handleEnd); window.addEventListener('mouseup', handleEnd);
 
 function loop() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     if(joy.active) {
         me.x += joy.x * 8; me.y += joy.y * 8;
-        if (db) db.ref('rooms/'+roomID+'/players/'+me.nick).set(me);
+        if(db) db.ref('rooms/'+roomID+'/players/'+me.nick).set(me);
     }
     ctx.save(); ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
+    ctx.strokeStyle="rgba(255,255,255,0.1)"; ctx.strokeRect(0,0,mapLimit,mapLimit);
     for(let id in flags) {
         let f = flags[id]; ctx.fillStyle = f.color.replace('55%)','15%)'); ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
         ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-35, 4, 35);
@@ -204,7 +192,7 @@ function loop() {
     }
     for(let id in players) {
         let p = players[id]; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, 7); ctx.fill();
-        ctx.fillStyle = "white"; ctx.fillText(p.nick, p.x-15, p.y-25);
+        ctx.fillStyle = "white"; ctx.fillText(p.nick, p.x-10, p.y-25);
     }
     ctx.restore();
     document.getElementById('r_wood').innerText = me.wood;
