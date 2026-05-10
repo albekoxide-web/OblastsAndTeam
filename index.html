@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Oblasts & Team: Ultimate Empire</title>
-    
-    <!-- ПОДКЛЮЧЕНИЕ FIREBASE (В САМОМ НАЧАЛЕ) -->
+
+    <!-- 1. ЗАВАНТАЖУЄМО БІБЛІОТЕКИ ПЕРШИМИ -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
 
@@ -13,23 +13,25 @@
         :root { --p: #00ff88; --s: #00d4ff; --bg: #050508; }
         body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; touch-action: none; user-select: none; }
         
-        /* ЛОББИ */
+        /* ЛОБІ */
         #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1a1a2e 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .window { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 30px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 320px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); }
         input, select { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: none; background: rgba(0,0,0,0.4); color: white; outline: none; text-align: center; font-size: 16px; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; text-transform: uppercase; }
         .btn-main { background: linear-gradient(45deg, var(--p), var(--s)); color: #000; }
 
-        /* ИНТЕРФЕЙС (HUD) */
+        /* HUD */
         #hud { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 5px; z-index: 500; pointer-events: none; }
         .stat { background: rgba(0,0,0,0.7); padding: 6px 15px; border-radius: 10px; border-left: 4px solid var(--p); font-size: 14px; font-weight: bold; }
 
-        /* РЫНОК */
+        /* РИНОК */
         #market-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #16213e; padding: 25px; border-radius: 20px; display: none; z-index: 700; border: 2px solid var(--s); text-align: center; width: 260px; }
 
-        /* УПРАВЛЕНИЕ */
+        /* ДЖОЙСТИК */
         #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; border: 1px solid rgba(255,255,255,0.2); }
         #joy-stick { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
+
+        /* КНОПКИ ДІЙ */
         #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 12px; z-index: 600; }
         .act-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; position: relative; }
         .act-btn span { position: absolute; bottom: -18px; font-size: 8px; color: var(--p); font-weight: bold; text-align: center; width: 80px; }
@@ -42,28 +44,28 @@
 <div id="lobby">
     <div id="m-start" class="window">
         <h1 style="color:var(--p); letter-spacing:5px;">OBLASTS</h1>
-        <input type="text" id="nick" placeholder="ТВОЙ НИК">
-        <button class="btn btn-main" onclick="showSettings()">СОЗДАТЬ МИР</button>
-        <input type="text" id="joinCode" placeholder="КОД КОМНАТЫ">
-        <button class="btn" style="background:#333; color:#fff" onclick="joinGame()">ПРИСОЕДИНИТЬСЯ</button>
+        <input type="text" id="nick" placeholder="ТВІЙ НІК">
+        <button class="btn btn-main" onclick="showSettings()">СТВОРИТИ МІР</button>
+        <input type="text" id="joinCode" placeholder="КОД КІМНАТИ">
+        <button class="btn" style="background:#333; color:#fff" onclick="joinGame()">ПРИЄДНАТИСЯ</button>
     </div>
     <div id="m-settings" class="window" style="display:none">
-        <h3>НАСТРОЙКИ</h3>
+        <h3>НАЛАШТУВАННЯ</h3>
         <select id="mapSize"><option value="4000">4000x4000</option><option value="8000" selected>8000x8000</option></select>
         <button class="btn btn-main" onclick="finalizeCreate()">ГОТОВО</button>
     </div>
     <div id="m-code" class="window" style="display:none">
-        <p>КОД ДЛЯ ДРУЗЕЙ:</p>
+        <p>КОД ДЛЯ ДРУЗІВ:</p>
         <h1 id="shareCode" style="color:var(--p); letter-spacing:5px;">XXXX</h1>
-        <button class="btn btn-main" onclick="enterWorld()">НАЧАТЬ</button>
+        <button class="btn btn-main" onclick="enterWorld()">ПОЧАТИ</button>
     </div>
 </div>
 
 <div id="market-ui">
-    <h3>РЫНОК ⚖️</h3>
+    <h3>РИНОК ⚖️</h3>
     <button class="btn" onclick="trade('w2f')">50🌲 -> 30🍎</button>
     <button class="btn" onclick="trade('s2f')">50🪨 -> 40🍎</button>
-    <button class="btn" style="background:#555" onclick="toggleMarket()">ЗАКРИТЬ</button>
+    <button class="btn" style="background:#555" onclick="toggleMarket()">ЗАКРИТИ</button>
 </div>
 
 <div id="hud">
@@ -76,18 +78,18 @@
 
 <div id="joy-bg"><div id="joy-stick"></div></div>
 <div id="actions">
-    <div class="act-btn" onclick="act('mine')">⛏️<span>СБОР [F]</span></div>
+    <div class="act-btn" onclick="act('mine')">⛏️<span>ЗБІР [F]</span></div>
     <div class="act-btn" onclick="act('flag')">🚩<span>ОБЛАСТЬ [E]</span></div>
     <div class="act-btn" onclick="act('house')">🏠<span>ДОМ [H]</span></div>
     <div class="act-btn" onclick="act('farm')">🌾<span>ФЕРМА [B]</span></div>
-    <div class="act-btn" onclick="act('army')">⚔️<span>АРМИЯ [R]</span></div>
-    <div class="act-btn" style="border-color:var(--s)" onclick="toggleMarket()">⚖️<span>РЫНОК</span></div>
+    <div class="act-btn" onclick="act('army')">⚔️<span>АРМІЯ [R]</span></div>
+    <div class="act-btn" style="border-color:var(--s)" onclick="toggleMarket()">⚖️<span>РИНОК</span></div>
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
-// ТВОЙ CONFIG FIREBASE
+// 2. ІНІЦІАЛІЗАЦІЯ ПІСЛЯ ПІДКЛЮЧЕННЯ БІБЛІОТЕК
 const firebaseConfig = {
   apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
   authDomain: "://firebaseapp.com",
@@ -101,17 +103,18 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ (ОБЪЯВЛЕНЫ ЗАРАНЕЕ)
-let roomID = ""; 
-let mapLimit = 4000;
-let me = { x: 0, y: 0, wood: 120, stone: 60, food: 100, pop: 1, army: 0, nick: "", color: "" };
-let players = {}, flags = {}, buildings = {}, items = {};
-let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
+// 3. ВСІ ЗМІННІ СТВОРЮЄМО ОДРАЗУ
+var roomID = ""; 
+var mapLimit = 4000;
+var me = { x: 0, y: 0, wood: 120, stone: 60, food: 100, pop: 1, army: 0, nick: "", color: "" };
+var players = {}, flags = {}, buildings = {}, items = {};
+var joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
+
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
 function showSettings() { 
-    if(!document.getElementById('nick').value) return alert("ВВЕДИ НИК!");
+    if(!document.getElementById('nick').value) return alert("ВВЕДИ НІК!");
     document.getElementById('m-start').style.display='none'; 
     document.getElementById('m-settings').style.display='block'; 
 }
@@ -133,16 +136,16 @@ function finalizeCreate() {
 
 function joinGame() {
     const nick = document.getElementById('nick').value;
-    const code = document.getElementById('roomCode').value.toUpperCase();
-    if(!nick || !code) return alert("ЗАПОЛНИ ПОЛЯ!");
+    const code = document.getElementById('joinCode').value.toUpperCase();
+    if(!nick || !code) return alert("ЗАПОВНИ ПОЛЯ!");
     db.ref('rooms/'+code).once('value', s => {
         if(s.exists()) { roomID = code; mapLimit = s.val().settings.limit; enterWorld(); }
-        else alert("КОД НЕВЕРЕН");
+        else alert("КОД НЕВІРНИЙ");
     });
 }
 
 function enterWorld() {
-    me.nick = document.getElementById('nick').value || "Player";
+    me.nick = document.getElementById('nick').value || "Гравець";
     me.color = `hsl(${Math.random()*360}, 75%, 55%)`;
     me.x = me.y = mapLimit / 2;
     document.getElementById('lobby').style.display = 'none';
@@ -162,7 +165,7 @@ function tick() {
     let f = 0, h = 0;
     for(let id in buildings) if(buildings[id].owner === me.nick) { if(buildings[id].type==='farm') f++; else h++; }
     me.food += f * 8;
-    if(me.food > 0) { me.food -= (me.pop*0.15 + me.army*0.35); if(me.pop < 10+h*15) me.pop += 0.25; }
+    if(me.food > 0) { me.food -= (me.pop*0.15 + me.army*0.3); if(me.pop < 10+h*15) me.pop += 0.25; }
     else { me.pop -= 0.6; me.army *= 0.8; if(me.pop < 1) me.pop = 1; }
     db.ref('rooms/'+roomID+'/players/'+me.nick).set(me);
 }
@@ -191,13 +194,12 @@ function act(type) {
     if(type==='army' && me.food>=60) { me.army++; me.food-=60; }
 }
 
-// ДЖОЙСТИК
 const jBg = document.getElementById('joy-bg');
 const jSt = document.getElementById('joy-stick');
-jBg.addEventListener('touchstart', e => { joy.active = true; joy.startX = e.touches[0].clientX; joy.startY = e.touches[0].clientY; });
+jBg.addEventListener('touchstart', e => { joy.active = true; joy.startX = e.touches.clientX; joy.startY = e.touches.clientY; });
 jBg.addEventListener('mousedown', e => { joy.active = true; joy.startX = e.clientX; joy.startY = e.clientY; });
 window.addEventListener('mousemove', e => { if(!joy.active) return; handleJoy(e.clientX, e.clientY); });
-window.addEventListener('touchmove', e => { if(!joy.active) return; handleJoy(e.touches[0].clientX, e.touches[0].clientY); });
+window.addEventListener('touchmove', e => { if(!joy.active) return; handleJoy(e.touches.clientX, e.touches.clientY); });
 function handleJoy(cx, cy) {
     let dx = cx - joy.startX; let dy = cy - joy.startY;
     let dist = Math.min(Math.hypot(dx, dy), 40);
@@ -223,7 +225,7 @@ function loop() {
     for(let id in buildings) { let b = buildings[id]; ctx.fillStyle = b.type==='house'?'#ff4400':'#ffcc00'; ctx.fillRect(b.x-25, b.y-25, 50, 50); }
     for(let id in players) { let p = players[id]; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, 7); ctx.fill(); ctx.fillStyle = "white"; ctx.fillText(p.nick, p.x-10, p.y-25); }
     ctx.restore();
-    ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(canvas.width/2, canvas.height/2, 280, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(0,0,0,0.75)"; ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(canvas.width/2, canvas.height/2, 280, 0, Math.PI*2);
     for(let id in flags) if(flags[id].owner === me.nick) { let fx = flags[id].x-me.x+canvas.width/2, fy = flags[id].y-me.y+canvas.height/2; ctx.moveTo(fx, fy); ctx.arc(fx, fy, 400, 0, Math.PI*2); }
     ctx.fill(); ctx.globalCompositeOperation = 'source-over';
     document.getElementById('r_wood').innerText = Math.floor(me.wood);
