@@ -3,48 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Ultimate</title>
+    <title>Oblasts & Team: Empires</title>
+    <!-- ПІДКЛЮЧАЄМО БІБЛІОТЕКИ В HEAD, ЩОБ ВОНИ ВАНТАЖИЛИСЯ В ПЕРШУ ЧЕРГУ -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
     <style>
         :root { --p: #00ff88; --s: #00d4ff; --bg: #050508; }
-        body { margin: 0; overflow: hidden; background: var(--bg); font-family: sans-serif; color: white; touch-action: none; user-select: none; }
-        
-        /* Лобі */
+        body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; touch-action: none; user-select: none; }
         #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1a1a2e 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .window { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 30px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 320px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(0,0,0,0.4); color: white; outline: none; text-align: center; }
+        input, select { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: none; background: rgba(0,0,0,0.4); color: white; outline: none; text-align: center; font-size: 16px; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; text-transform: uppercase; }
         .btn-main { background: linear-gradient(45deg, var(--p), var(--s)); color: #000; }
-
-        /* HUD */
         #gui { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 5px; z-index: 500; }
         .stat { background: rgba(0,0,0,0.7); padding: 6px 15px; border-radius: 10px; border-left: 4px solid var(--p); font-size: 14px; font-weight: bold; }
-
-        /* Джойстик */
-        #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; border: 1px solid rgba(255,255,255,0.2); }
-        #joy-stick { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
-
-        /* Дії */
-        #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 12px; z-index: 600; }
-        .act-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; position: relative; }
-        .act-btn span { position: absolute; bottom: -18px; font-size: 9px; color: var(--p); font-weight: bold; width: 80px; text-align: center; }
-        
-        #market-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #16213e; padding: 25px; border-radius: 20px; display: none; z-index: 700; border: 2px solid var(--s); text-align: center; width: 260px; }
+        #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 110px; height: 110px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; border: 1px solid rgba(255,255,255,0.2); }
+        #joy-stick { position: absolute; top: 30px; left: 30px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
+        #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 15px; z-index: 600; }
+        .act-btn { width: 65px; height: 65px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; }
         canvas { display: block; }
     </style>
 </head>
 <body>
 
-<!-- ПЕРШИМ ПІДКЛЮЧАЄМО FIREBASE -->
-<script src="https://gstatic.com"></script>
-<script src="https://gstatic.com"></script>
-
 <div id="lobby">
     <div id="m-start" class="window">
-        <h1 style="color:var(--p)">OBLASTS</h1>
+        <h1 style="color:var(--p); letter-spacing:5px;">OBLASTS</h1>
         <input type="text" id="nick" placeholder="ТВІЙ НІК">
         <button class="btn btn-main" onclick="showSettings()">СТВОРИТИ МІР</button>
         <input type="text" id="joinCode" placeholder="КОД КІМНАТИ">
-        <button class="btn" style="background:#333; color:#fff" onclick="joinGame()">ПРИЄДНАТИСЯ</button>
+        <button class="btn" style="background:#222; color:#fff" onclick="joinGame()">УВІЙТИ</button>
     </div>
     <div id="m-settings" class="window" style="display:none">
         <h3>НАЛАШТУВАННЯ</h3>
@@ -53,15 +41,9 @@
     </div>
     <div id="m-code" class="window" style="display:none">
         <p>КОД КІМНАТИ:</p>
-        <h1 id="shareCode" style="color:var(--p); letter-spacing:5px;">XXXX</h1>
-        <button class="btn btn-main" onclick="enterWorld()">ПОЧАТИ</button>
+        <h1 id="shareCode" style="color:var(--p); letter-spacing:8px;">XXXX</h1>
+        <button class="btn btn-main" onclick="enterWorld()">ПОЧАТИ ГРУ</button>
     </div>
-</div>
-
-<div id="market-ui">
-    <h3>РИНОК ⚖️</h3>
-    <button class="btn" onclick="trade('w2f')">50🌲 -> 30🍎</button>
-    <button class="btn" style="background:#555" onclick="toggleMarket()">ЗАКРИТИ</button>
 </div>
 
 <div id="gui">
@@ -73,15 +55,14 @@
 
 <div id="joy-bg"><div id="joy-stick"></div></div>
 <div id="actions">
-    <div class="act-btn" onclick="act('mine')">⛏️<span>ЗБІР</span></div>
-    <div class="act-btn" onclick="act('flag')">🚩<span>ОБЛАСТЬ</span></div>
-    <div class="act-btn" onclick="toggleMarket()">⚖️<span>РИНОК</span></div>
+    <div class="act-btn" onclick="act('mine')">⛏️</div>
+    <div class="act-btn" onclick="act('flag')">🚩</div>
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
-// Твій Config
+// ТВІЙ КОНФІГ
 const firebaseConfig = {
   apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
   authDomain: "://firebaseapp.com",
@@ -92,15 +73,15 @@ const firebaseConfig = {
   appId: "1:1070668055977:web:01886461edd6a9cedf30b8"
 };
 
-// Ініціалізація відразу
+// Ініціалізація ТІЛЬКИ ПІСЛЯ ЗАВАНТАЖЕННЯ БІБЛІОТЕК
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Оголошуємо змінні НАПОЧАТКУ
+// Глобальні змінні
 let roomID = ""; 
 let mapLimit = 4000;
-let me = { x: 0, y: 0, wood: 100, stone: 50, food: 100, pop: 1, nick: "", color: "" };
-let players = {}, flags = {}, items = {}, buildings = {};
+let me = { x: 0, y: 0, wood: 150, stone: 50, food: 100, pop: 1, nick: "", color: "" };
+let players = {}, flags = {}, items = {};
 let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
 
 const canvas = document.getElementById('game');
@@ -113,12 +94,11 @@ function showSettings() {
 }
 
 function finalizeCreate() {
-    // Тепер roomID вже існує як змінна
     roomID = Math.random().toString(36).substring(2, 6).toUpperCase();
     mapLimit = parseInt(document.getElementById('mapSize').value);
     
     let res = {};
-    for(let i=0; i<100; i++) {
+    for(let i=0; i<150; i++) {
         let t = Math.random();
         res['r'+i] = { x: Math.random()*mapLimit, y: Math.random()*mapLimit, type: t>0.5?'t':'s' };
     }
@@ -133,6 +113,8 @@ function finalizeCreate() {
 function joinGame() {
     const nick = document.getElementById('nick').value;
     const code = document.getElementById('joinCode').value.toUpperCase();
+    if(!nick || !code) return alert("ЗАПОВНИ ПОЛЯ!");
+    
     db.ref('rooms/' + code).once('value', s => {
         if(s.exists()) { roomID = code; mapLimit = s.val().settings.limit; enterWorld(); }
         else alert("КОД НЕВІРНИЙ");
@@ -143,6 +125,7 @@ function enterWorld() {
     me.nick = document.getElementById('nick').value;
     me.color = `hsl(${Math.random()*360}, 75%, 55%)`;
     me.x = me.y = mapLimit / 2;
+    
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('gui').style.display = 'flex';
     document.getElementById('joy-bg').style.display = 'block';
@@ -155,9 +138,6 @@ function enterWorld() {
     
     requestAnimationFrame(loop);
 }
-
-function toggleMarket() { let m = document.getElementById('market-ui'); m.style.display = m.style.display==='none'?'block':'none'; }
-function trade(t) { if(t==='w2f' && me.wood>=50) { me.wood-=50; me.food+=30; db.ref('rooms/'+roomID+'/players/'+me.nick).set(me); } }
 
 function act(type) {
     if(type === 'mine') {
@@ -176,26 +156,45 @@ function act(type) {
     }
 }
 
-// Джойстик
+// Керування джойстиком (ПК + Телефон)
 const jBg = document.getElementById('joy-bg');
 const jSt = document.getElementById('joy-stick');
-jBg.addEventListener('touchstart', e => { joy.active = true; joy.startX = e.touches[0].clientX; joy.startY = e.touches[0].clientY; });
-window.addEventListener('touchmove', e => {
+
+function handleStart(cx, cy) { joy.active = true; joy.startX = cx; joy.startY = cy; }
+function handleMove(cx, cy) {
     if(!joy.active) return;
-    let dx = e.touches[0].clientX - joy.startX; let dy = e.touches[0].clientY - joy.startY;
+    let dx = cx - joy.startX; let dy = cy - joy.startY;
     let dist = Math.min(Math.hypot(dx, dy), 40);
     let angle = Math.atan2(dy, dx);
-    joy.x = Math.cos(angle) * (dist / 40); joy.y = Math.sin(angle) * (dist / 40);
+    joy.x = Math.cos(angle) * (dist / 40);
+    joy.y = Math.sin(angle) * (dist / 40);
     jSt.style.transform = `translate(${joy.x*40}px, ${joy.y*40}px)`;
-});
-window.addEventListener('touchend', () => { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; });
+}
+function handleEnd() { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; }
+
+jBg.addEventListener('touchstart', e => handleStart(e.touches[0].clientX, e.touches[0].clientY));
+jBg.addEventListener('mousedown', e => handleStart(e.clientX, e.clientY));
+window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY));
+window.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
+window.addEventListener('touchend', handleEnd);
+window.addEventListener('mouseup', handleEnd);
 
 function loop() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    if(joy.active) { me.x += joy.x * 8; me.y += joy.y * 8; db.ref('rooms/'+roomID+'/players/'+me.nick).set(me); }
-    ctx.save(); ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
+    if(joy.active) {
+        me.x += joy.x * 8; me.y += joy.y * 8;
+        db.ref('rooms/'+roomID+'/players/'+me.nick).set(me);
+    }
+    
+    ctx.save();
+    ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
+    
+    // Границя
+    ctx.strokeStyle="rgba(255,255,255,0.1)"; ctx.strokeRect(0,0,mapLimit,mapLimit);
+    
     for(let id in flags) {
-        let f = flags[id]; ctx.fillStyle = f.color.replace('50%)','15%)'); ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
+        let f = flags[id]; ctx.fillStyle = f.color.replace('55%)','15%)');
+        ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
         ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-35, 4, 35);
     }
     for(let id in items) {
@@ -203,13 +202,15 @@ function loop() {
         ctx.beginPath(); ctx.arc(it.x, it.y, 15, 0, 7); ctx.fill();
     }
     for(let id in players) {
-        let p = players[id]; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, 7); ctx.fill();
-        ctx.fillStyle = "white"; ctx.fillText(p.nick, p.x-10, p.y-25);
+        let p = players[id]; ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, 7); ctx.fill();
+        ctx.fillStyle = "white"; ctx.font = "bold 14px sans-serif";
+        ctx.fillText(p.nick, p.x-15, p.y-25);
     }
     ctx.restore();
+
     document.getElementById('r_wood').innerText = me.wood;
     document.getElementById('r_stone').innerText = me.stone;
-    document.getElementById('r_food').innerText = Math.floor(me.food);
     requestAnimationFrame(loop);
 }
 </script>
