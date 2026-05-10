@@ -1,150 +1,111 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: P2P Edition</title>
-    
-    <!-- Используем CDNJS вместо UNPKG (его реже блокируют) -->
+    <title>Oblasts & Team: Ultimate P2P</title>
+    <!-- Використовуємо надійне джерело бібліотеки -->
     <script src="https://cloudflare.com"></script>
-
     <style>
         :root { --p: #00ff88; --s: #00d4ff; --bg: #050508; }
-        body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; touch-action: none; user-select: none; }
-        
-        /* Лобби */
-        #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1a1a2e, #000); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .win { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 300px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(0,0,0,0.4); color: white; text-align: center; font-size: 16px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; text-transform: uppercase; }
-        .btn-main { background: linear-gradient(45deg, var(--p), var(--s)); color: #000; }
-
-        /* HUD */
+        body { margin: 0; overflow: hidden; background: var(--bg); font-family: sans-serif; color: white; touch-action: none; user-select: none; }
+        #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1a1a2e 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .win { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 300px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(0,0,0,0.4); color: white; text-align: center; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; background: var(--p); color: #000; margin-top: 10px; }
         #gui { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 5px; z-index: 500; pointer-events: none; }
-        .stat { background: rgba(0,0,0,0.8); padding: 6px 15px; border-radius: 10px; border-left: 4px solid var(--p); font-size: 14px; font-weight: bold; }
-
-        /* Джойстик */
+        .stat { background: rgba(0,0,0,0.8); padding: 6px 12px; border-radius: 10px; border-left: 4px solid var(--p); font-size: 14px; font-weight: bold; }
         #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 110px; height: 110px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; border: 1px solid rgba(255,255,255,0.2); }
         #joy-stick { position: absolute; top: 30px; left: 30px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
-
-        /* Кнопки действий */
-        #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 15px; z-index: 600; }
-        .act-btn { width: 65px; height: 65px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; position: relative; }
+        #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 12px; z-index: 600; }
+        .act-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; position: relative; }
         .act-btn span { position: absolute; bottom: -18px; font-size: 8px; color: var(--p); font-weight: bold; width: 80px; text-align: center; }
-
         canvas { display: block; }
-        #status { position: absolute; top: 5px; width: 100%; text-align: center; font-size: 10px; color: #555; }
     </style>
 </head>
 <body>
 
-<div id="status">Загрузка библиотек...</div>
-
 <div id="lobby">
     <div class="win">
         <h1 style="color:var(--p)">OBLASTS</h1>
-        <input type="text" id="nick" placeholder="ТВОЙ НИК">
-        <button class="btn btn-main" onclick="startHost()">СОЗДАТЬ (Я ХОСТ)</button>
-        <p style="font-size:12px; margin:10px 0">ИЛИ</p>
-        <input type="text" id="joinID" placeholder="ID ДРУГА">
-        <button class="btn" style="background:#222; color:#fff" onclick="startJoin()">ПРИСОЕДИНИТЬСЯ</button>
+        <input type="text" id="nick" placeholder="ТВІЙ НІК">
+        <button onclick="startHost()">СТВОРИТИ (Я ХОСТ)</button>
+        <p style="font-size:12px; margin:10px 0">АБО</p>
+        <input type="text" id="joinID" placeholder="ID ХОСТА">
+        <button style="background:#222; color:#fff" onclick="startJoin()">ПРИЄДНАТИСЯ</button>
     </div>
 </div>
 
 <div id="gui">
     <div class="stat">🌲 <span id="r_wood">0</span> | 🪨 <span id="r_stone">0</span></div>
     <div class="stat">🍎 <span id="r_food">0</span> | 👥 <span id="r_pop">0</span></div>
-    <div class="stat" style="border-color:red">⚔️ <span id="r_army">0</span></div>
-    <div id="room-display" style="font-size:10px; color:#aaa; margin-top:5px;"></div>
+    <div class="stat" style="border-color: #ff3e3e;">⚔️ <span id="r_army">0</span></div>
+    <div id="room-info" style="font-size:10px; color:gray; margin-top:5px;"></div>
 </div>
 
 <div id="joy-bg"><div id="joy-stick"></div></div>
+
 <div id="actions">
-    <div class="act-btn" onclick="act('mine')">⛏️<span>СБОР</span></div>
+    <div class="act-btn" onclick="act('mine')">⛏️<span>ЗБІР</span></div>
     <div class="act-btn" onclick="act('flag')">🚩<span>ОБЛАСТЬ</span></div>
     <div class="act-btn" onclick="act('house')">🏠<span>ДОМ</span></div>
-    <div class="act-btn" onclick="act('army')">⚔️<span>ВОЙСКО</span></div>
+    <div class="act-btn" onclick="act('army')">⚔️<span>АРМІЯ</span></div>
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
-let peer, conn, myId;
+let peer, conn;
 let isHost = false;
-let players = {}, flags = [], items = [], buildings = [];
-let me = { id: "", nick: "", x: 2500, y: 2500, wood: 120, stone: 60, food: 100, pop: 1, army: 0, color: "#0f8" };
+let me = { id: "", nick: "", x: 2500, y: 2500, wood: 100, stone: 50, food: 100, pop: 1, army: 0, color: "#0f8" };
+let players = {}, items = [], flags = [], buildings = [];
 let mapS = 5000;
 let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-// Проверка загрузки PeerJS
-window.onload = () => {
-    if (typeof Peer !== 'undefined') {
-        document.getElementById('status').innerText = "Сеть готова ✅";
-    } else {
-        document.getElementById('status').innerText = "Ошибка: Сеть заблокирована ❌";
-        alert("Браузер блокирует скрипты. Выключи защиту или смени браузер.");
-    }
-};
-
 function startHost() {
     isHost = true;
     me.nick = document.getElementById('nick').value || "Host";
-    me.color = "#00ff88";
     initPeer();
 }
 
 function startJoin() {
     isHost = false;
+    let target = document.getElementById('joinID').value;
+    if(!target) return alert("Введи ID хоста!");
     me.nick = document.getElementById('nick').value || "Player";
-    me.color = "#00d4ff";
-    let targetID = document.getElementById('joinID').value;
-    if(!targetID) return alert("Введи ID хоста!");
-    initPeer(targetID);
+    initPeer(target);
 }
 
-function initPeer(targetID = null) {
+function initPeer(target = null) {
+    if(typeof Peer === 'undefined') return alert("Бібліотека не завантажена. Перевір інтернет!");
     peer = new Peer();
     peer.on('open', (id) => {
-        myId = id;
         me.id = id;
-        if (isHost) {
-            document.getElementById('shareCode').innerText = id; // Если бы было окно с кодом
-            console.log("ID комнаты: " + id);
-            alert("ТВОЙ КОД КОМНАТЫ: " + id + "\nДай его друзьям!");
+        document.getElementById('room-info').innerText = "Твій ID: " + id;
+        if(isHost) {
+            alert("КОД ДЛЯ ДРУЗІВ: " + id);
+            spawnWorld();
             startGame();
-            spawnResources();
         } else {
-            conn = peer.connect(targetID);
+            conn = peer.connect(target);
             setupConn(conn);
         }
     });
-
-    peer.on('connection', (c) => {
-        if(Object.keys(players).length >= 5) return c.close(); // Лимит 6 человек
-        setupConn(c);
-    });
+    peer.on('connection', (c) => setupConn(c));
 }
 
 function setupConn(c) {
     c.on('open', () => {
         conn = c;
         startGame();
-        setInterval(() => {
-            conn.send({ type: 'update', player: me });
-        }, 50);
+        setInterval(() => conn.send({type:'update', player: me}), 50);
     });
-
     c.on('data', (data) => {
-        if (data.type === 'update') players[data.player.id] = data.player;
-        if (data.type === 'world') {
-            items = data.items;
-            flags = data.flags;
-            buildings = data.buildings;
-            players = data.players;
-        }
+        if(data.type === 'update') players[data.player.id] = data.player;
+        if(data.type === 'world') { items = data.items; flags = data.flags; buildings = data.buildings; }
     });
 }
 
@@ -153,60 +114,38 @@ function startGame() {
     document.getElementById('gui').style.display = 'flex';
     document.getElementById('joy-bg').style.display = 'block';
     document.getElementById('actions').style.display = 'flex';
-    document.getElementById('room-display').innerText = "ID: " + (isHost ? myId : "Connected");
-    
-    setInterval(tick, 3000);
+    if(isHost) setInterval(() => {
+        Object.values(peer.connections).forEach(slot => {
+            slot[0].send({type:'world', items, flags, buildings});
+        });
+    }, 1000);
     requestAnimationFrame(loop);
 }
 
-function spawnResources() {
-    for(let i=0; i<100; i++) {
-        items.push({ id: i, x: Math.random()*mapS, y: Math.random()*mapS, type: Math.random()>0.5?'t':'s' });
-    }
-}
-
-function tick() {
-    // Экономика
-    if(me.food > 0) {
-        me.food -= (me.pop * 0.2 + me.army * 0.4);
-        if(me.pop < 20) me.pop += 0.2;
-    } else {
-        me.pop -= 0.5; me.army *= 0.8; if(me.pop < 1) me.pop = 1;
-    }
-    if (isHost) {
-        // Хост рассылает состояние мира всем
-        peer.connections && Object.values(peer.connections).forEach(slot => {
-            slot[0].send({ type: 'world', items, flags, buildings, players });
-        });
-    }
+function spawnWorld() {
+    for(let i=0; i<100; i++) items.push({x: Math.random()*mapS, y: Math.random()*mapS, t: Math.random()>0.5?'t':'s'});
 }
 
 function act(type) {
     if(type === 'mine') {
-        for(let i=0; i<items.length; i++) {
-            if(Math.hypot(me.x - items[i].x, me.y - items[i].y) < 100) {
-                if(items[i].type === 't') me.wood += 25; else me.stone += 20;
-                if(isHost) items.splice(i, 1); 
-                else conn.send({type: 'mine', id: items[i].id});
-                return;
+        items.forEach((it, i) => {
+            if(Math.hypot(me.x - it.x, me.y - it.y) < 100) {
+                if(it.t === 't') me.wood += 20; else me.stone += 15;
+                items.splice(i, 1); return;
             }
-        }
+        });
     }
-    if(type === 'flag' && me.wood >= 50) {
-        let f = {x: me.x, y: me.y, owner: me.id, color: me.color};
-        if(isHost) flags.push(f); else conn.send({type: 'build', building: f, bType: 'flag'});
-        me.wood -= 50;
-    }
+    if(type === 'flag' && me.wood >= 50) { flags.push({x: me.x, y: me.y, owner: me.id, color: me.color}); me.wood -= 50; }
+    if(type === 'house' && me.wood >= 80 && me.stone >= 30) { buildings.push({x: me.x, y: me.y, t: 'h'}); me.wood -= 80; me.stone -= 30; me.pop += 5; }
 }
 
-// Джойстик
 const jBg = document.getElementById('joy-bg'), jSt = document.getElementById('joy-stick');
-jBg.onpointerdown = (e) => { joy.active = true; joy.startX = e.clientX; joy.startY = e.clientY; };
-window.onpointermove = (e) => {
+jBg.onpointerdown = e => { joy.active = true; joy.startX = e.clientX; joy.startY = e.clientY; };
+window.onpointermove = e => {
     if(!joy.active) return;
     let dx = e.clientX - joy.startX, dy = e.clientY - joy.startY;
     let dist = Math.min(Math.hypot(dx, dy), 40), angle = Math.atan2(dy, dx);
-    joy.x = Math.cos(angle) * (dist / 40); joy.y = Math.sin(angle) * (dist / 40);
+    joy.x = Math.cos(angle) * (dist/40); joy.y = Math.sin(angle) * (dist/40);
     jSt.style.transform = `translate(${joy.x*40}px, ${joy.y*40}px)`;
 };
 window.onpointerup = () => { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; };
@@ -214,41 +153,28 @@ window.onpointerup = () => { joy.active = false; joy.x = joy.y = 0; jSt.style.tr
 function loop() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     if(joy.active) { me.x += joy.x * 8; me.y += joy.y * 8; }
-
     ctx.save();
     ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
-    
-    // Рисуем мир
     ctx.strokeStyle = "#222"; ctx.strokeRect(0,0,mapS,mapS);
-    
     flags.forEach(f => {
         ctx.fillStyle = f.color + "22"; ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
         ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-30, 4, 30);
     });
-
-    items.forEach(it => {
-        ctx.fillStyle = it.type === 't' ? "#0f8" : "#777";
-        ctx.beginPath(); ctx.arc(it.x, it.y, 15, 0, 7); ctx.fill();
-    });
-
-    // Рисуем игроков
+    items.forEach(it => { ctx.fillStyle = it.t === 't' ? '#0f8' : '#777'; ctx.beginPath(); ctx.arc(it.x, it.y, 15, 0, 7); ctx.fill(); });
+    buildings.forEach(b => { ctx.fillStyle = "#e67e22"; ctx.fillRect(b.x-25, b.y-25, 50, 50); });
     [me, ...Object.values(players)].forEach(p => {
-        if(!p.x) return;
-        ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 20, 0, 7); ctx.fill();
-        ctx.fillStyle = "white"; ctx.font = "bold 14px sans-serif";
-        ctx.fillText(p.nick, p.x - 20, p.y - 30);
+        ctx.fillStyle = p.id === me.id ? '#00ff88' : '#00d4ff';
+        ctx.beginPath(); ctx.arc(p.x, p.y, 20, 0, 7); ctx.fill();
+        ctx.fillStyle = "white"; ctx.fillText(p.nick, p.x-15, p.y-25);
     });
-
     ctx.restore();
-
     document.getElementById('r_wood').innerText = Math.floor(me.wood);
     document.getElementById('r_stone').innerText = Math.floor(me.stone);
     document.getElementById('r_food').innerText = Math.floor(me.food);
     document.getElementById('r_pop').innerText = Math.floor(me.pop);
-    document.getElementById('r_army').innerText = Math.floor(me.army);
-
     requestAnimationFrame(loop);
 }
 </script>
 </body>
 </html>
+
