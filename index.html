@@ -1,60 +1,197 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Emergency Fix</title>
-    <!-- Прямое подключение без лишних скриптов -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
+    <title>Oblasts & Team: Playroom Edition</title>
+    <!-- Підключаємо Playroom SDK -->
+    <script src="https://unpkg.com"></script>
     <style>
-        body { margin: 0; background: #050508; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        .win { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        input { padding: 12px; margin: 10px; border-radius: 8px; border: none; text-align: center; }
-        button { padding: 12px 25px; background: #00ff88; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        :root { --p: #00ff88; --bg: #0a0a0f; }
+        body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; touch-action: none; user-select: none; }
+        
+        #gui { position: absolute; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 8px; pointer-events: none; z-index: 500; }
+        .stat { background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 12px; border-left: 4px solid var(--p); font-weight: bold; }
+
+        #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); z-index: 600; }
+        #joy-stick { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
+
+        #actions { position: absolute; bottom: 30px; right: 20px; display: flex; flex-direction: column; gap: 12px; z-index: 600; }
+        .act-btn { width: 65px; height: 65px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; position: relative; }
+        .act-btn span { position: absolute; bottom: -18px; font-size: 9px; color: var(--p); font-weight: bold; text-align: center; width: 80px; }
+
+        canvas { display: block; }
     </style>
 </head>
 <body>
-    <div id="lobby" class="win">
-        <h1>OBLASTS</h1>
-        <p id="status">Загрузка базы данных...</p>
-        <input type="text" id="nick" placeholder="НИК">
-        <input type="text" id="room" placeholder="КОМНАТА">
-        <br>
-        <button onclick="enter()">ВОЙТИ</button>
-    </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
-            authDomain: "://firebaseapp.com",
-            databaseURL: "https://firebasedatabase.app",
-            projectId: "oblastandteam",
-            storageBucket: "oblastandteam.firebasestorage.app",
-            messagingSenderId: "1070668055977",
-            appId: "1:1070668055977:web:01886461edd6a9cedf30b8"
-        };
+<div id="gui">
+    <div class="stat">🌲 Дерево: <span id="r_wood">0</span></div>
+    <div class="stat">🪨 Камінь: <span id="r_stone">0</span></div>
+    <div class="stat">🍎 Їжа: <span id="r_food">0</span></div>
+    <div class="stat">👥 Люди: <span id="r_pop">0</span></div>
+</div>
 
-        let db;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-            document.getElementById('status').innerText = "Связь с космосом установлена ✅";
-            document.getElementById('status').style.color = "#00ff88";
-        } catch(e) {
-            document.getElementById('status').innerText = "Ошибка: Провайдер блокирует Google Firebase ❌";
-            document.getElementById('status').style.color = "red";
+<div id="joy-bg"><div id="joy-stick"></div></div>
+
+<div id="actions">
+    <div class="act-btn" onclick="act('mine')">⛏️<span>ЗБІР</span></div>
+    <div class="act-btn" onclick="act('flag')">🚩<span>ОБЛАСТЬ</span></div>
+    <div class="act-btn" onclick="act('house')">🏠<span>ДОМ</span></div>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+const { insertCoin, myPlayer, onPlayerJoin, isHost, getState, setState, getRoomCode } = Playroom;
+
+let players = [];
+let me, myData;
+let flags = [];
+let items = [];
+let mapS = 4000;
+let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+async function init() {
+    // ЗАПУСК ГРИ ТА ЛОБІ
+    await insertCoin();
+
+    me = myPlayer();
+    myData = {
+        x: mapS/2, y: mapS/2,
+        wood: 100, stone: 50, food: 100, pop: 1
+    };
+    
+    // Встановлюємо початкові дані
+    me.setState("pos", {x: myData.x, y: myData.y});
+    me.setState("res", myData);
+
+    // Якщо ми хост — створюємо ресурси на карті
+    if (isHost()) {
+        let initialItems = [];
+        for(let i=0; i<100; i++) {
+            initialItems.push({
+                id: i,
+                x: Math.random()*mapS,
+                y: Math.random()*mapS,
+                type: Math.random() > 0.5 ? 't' : 's'
+            });
         }
+        setState("items", initialItems);
+    }
 
-        function enter() {
-            const r = document.getElementById('room').value.toUpperCase();
-            const n = document.getElementById('nick').value;
-            if(!r || !n) return alert("Заполни поля");
-            // Проверка записи
-            db.ref('rooms/'+r+'/players/'+n).set({status: "online"}).then(() => {
-                alert("Ты в игре! (Механики подгрузятся после этого теста)");
-            }).catch(e => alert("Блокировка записи: " + e.message));
+    onPlayerJoin((player) => {
+        players.push(player);
+        player.onQuit(() => {
+            players = players.filter(p => p.id !== player.id);
+        });
+    });
+
+    requestAnimationFrame(loop);
+}
+
+function act(type) {
+    let res = me.getState("res");
+    let pos = me.getState("pos");
+
+    if (type === 'mine') {
+        let currentItems = getState("items") || [];
+        for (let i = 0; i < currentItems.length; i++) {
+            let it = currentItems[i];
+            if (Math.hypot(pos.x - it.x, pos.y - it.y) < 100) {
+                if (it.type === 't') res.wood += 20; else res.stone += 15;
+                // Видаляємо предмет (тільки хост може реально міняти стейт світу)
+                let newItems = [...currentItems];
+                newItems.splice(i, 1);
+                setState("items", newItems);
+                me.setState("res", res);
+                return;
+            }
         }
-    </script>
+    }
+    if (type === 'flag' && res.wood >= 50) {
+        let currentFlags = getState("flags") || [];
+        currentFlags.push({x: pos.x, y: pos.y, color: me.getProfile().color.hex, owner: me.id});
+        setState("flags", currentFlags);
+        res.wood -= 50;
+        me.setState("res", res);
+    }
+}
+
+// Джойстик
+const jBg = document.getElementById('joy-bg'), jSt = document.getElementById('joy-stick');
+function handleStart(cx, cy) { joy.active = true; joy.startX = cx; joy.startY = cy; }
+function handleMove(cx, cy) {
+    if(!joy.active) return;
+    let dx = cx - joy.startX, dy = cy - joy.startY;
+    let dist = Math.min(Math.hypot(dx, dy), 40);
+    let angle = Math.atan2(dy, dx);
+    joy.x = Math.cos(angle) * (dist / 40); joy.y = Math.sin(angle) * (dist / 40);
+    jSt.style.transform = `translate(${joy.x*40}px, ${joy.y*40}px)`;
+}
+function handleEnd() { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; }
+
+jBg.addEventListener('touchstart', e => handleStart(e.touches[0].clientX, e.touches[0].clientY));
+jBg.addEventListener('mousedown', e => handleStart(e.clientX, e.clientY));
+window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY));
+window.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
+window.addEventListener('touchend', handleEnd); window.addEventListener('mouseup', handleEnd);
+
+function loop() {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    let pos = me.getState("pos");
+    let res = me.getState("res");
+
+    if (joy.active) {
+        pos.x += joy.x * 8;
+        pos.y += joy.y * 8;
+        me.setState("pos", pos);
+    }
+
+    ctx.save();
+    ctx.translate(canvas.width/2 - pos.x, canvas.height/2 - pos.y);
+
+    // Малюємо прапори
+    let allFlags = getState("flags") || [];
+    allFlags.forEach(f => {
+        ctx.fillStyle = f.color + "22"; 
+        ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
+        ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-30, 4, 30);
+    });
+
+    // Малюємо ресурси
+    let allItems = getState("items") || [];
+    allItems.forEach(it => {
+        ctx.fillStyle = it.type === 't' ? "#00ff88" : "#777";
+        ctx.beginPath(); ctx.arc(it.x, it.y, 15, 0, 7); ctx.fill();
+    });
+
+    // Малюємо гравців
+    players.forEach(p => {
+        let pPos = p.getState("pos");
+        if (pPos) {
+            ctx.fillStyle = p.getProfile().color.hex;
+            ctx.beginPath(); ctx.arc(pPos.x, pPos.y, 20, 0, 7); ctx.fill();
+            ctx.fillStyle = "white"; ctx.font = "bold 14px sans-serif";
+            ctx.fillText(p.getProfile().name, pPos.x - 20, pPos.y - 30);
+        }
+    });
+
+    ctx.restore();
+
+    // Оновлення HUD
+    document.getElementById('r_wood').innerText = Math.floor(res.wood);
+    document.getElementById('r_stone').innerText = Math.floor(res.stone);
+    document.getElementById('r_food').innerText = Math.floor(res.food);
+    document.getElementById('r_pop').innerText = Math.floor(res.pop);
+
+    requestAnimationFrame(loop);
+}
+
+init();
+</script>
 </body>
 </html>
