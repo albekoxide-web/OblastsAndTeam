@@ -3,33 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Ultimate P2P</title>
-    <!-- Використовуємо надійне джерело бібліотеки -->
-    <script src="https://cloudflare.com"></script>
+    <title>Oblasts & Team: Mega Fix</title>
+    
     <style>
-        :root { --p: #00ff88; --s: #00d4ff; --bg: #050508; }
+        :root { --p: #00ff88; --bg: #050508; }
         body { margin: 0; overflow: hidden; background: var(--bg); font-family: sans-serif; color: white; touch-action: none; user-select: none; }
         #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1a1a2e 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .win { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 300px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(0,0,0,0.4); color: white; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(0,0,0,0.4); color: white; text-align: center; font-size: 16px; }
         button { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; background: var(--p); color: #000; margin-top: 10px; }
         #gui { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 5px; z-index: 500; pointer-events: none; }
         .stat { background: rgba(0,0,0,0.8); padding: 6px 12px; border-radius: 10px; border-left: 4px solid var(--p); font-size: 14px; font-weight: bold; }
         #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 110px; height: 110px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; border: 1px solid rgba(255,255,255,0.2); }
-        #joy-stick { position: absolute; top: 30px; left: 30px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
+        #joy-stick { position: absolute; top: 30px; left: 30px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; }
         #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 12px; z-index: 600; }
         .act-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; position: relative; }
         .act-btn span { position: absolute; bottom: -18px; font-size: 8px; color: var(--p); font-weight: bold; width: 80px; text-align: center; }
+        #net-status { position: absolute; top: 10px; width: 100%; text-align: center; font-size: 10px; color: #555; z-index: 2000; }
         canvas { display: block; }
     </style>
 </head>
 <body>
 
+<div id="net-status">Мережа: завантаження...</div>
+
 <div id="lobby">
     <div class="win">
         <h1 style="color:var(--p)">OBLASTS</h1>
         <input type="text" id="nick" placeholder="ТВІЙ НІК">
-        <button onclick="startHost()">СТВОРИТИ (Я ХОСТ)</button>
+        <button onclick="startHost()">СТВОРИТИ СВІТ</button>
         <p style="font-size:12px; margin:10px 0">АБО</p>
         <input type="text" id="joinID" placeholder="ID ХОСТА">
         <button style="background:#222; color:#fff" onclick="startJoin()">ПРИЄДНАТИСЯ</button>
@@ -39,73 +41,87 @@
 <div id="gui">
     <div class="stat">🌲 <span id="r_wood">0</span> | 🪨 <span id="r_stone">0</span></div>
     <div class="stat">🍎 <span id="r_food">0</span> | 👥 <span id="r_pop">0</span></div>
-    <div class="stat" style="border-color: #ff3e3e;">⚔️ <span id="r_army">0</span></div>
-    <div id="room-info" style="font-size:10px; color:gray; margin-top:5px;"></div>
 </div>
 
 <div id="joy-bg"><div id="joy-stick"></div></div>
-
 <div id="actions">
     <div class="act-btn" onclick="act('mine')">⛏️<span>ЗБІР</span></div>
     <div class="act-btn" onclick="act('flag')">🚩<span>ОБЛАСТЬ</span></div>
-    <div class="act-btn" onclick="act('house')">🏠<span>ДОМ</span></div>
-    <div class="act-btn" onclick="act('army')">⚔️<span>АРМІЯ</span></div>
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
-let peer, conn;
-let isHost = false;
-let me = { id: "", nick: "", x: 2500, y: 2500, wood: 100, stone: 50, food: 100, pop: 1, army: 0, color: "#0f8" };
-let players = {}, items = [], flags = [], buildings = [];
-let mapS = 5000;
-let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
+// --- МЕГА-ЗАВАНТАЖУВАЧ БІБЛІОТЕК ---
+const sources = [
+    "https://cloudflare.com",
+    "https://jsdelivr.net",
+    "https://unpkg.com"
+];
 
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+let currentSrc = 0;
+function loadLib() {
+    let script = document.createElement('script');
+    script.src = sources[currentSrc];
+    script.onload = () => {
+        document.getElementById('net-status').innerText = "Мережа: Готoво ✅";
+        document.getElementById('net-status').style.color = "#0f8";
+    };
+    script.onerror = () => {
+        currentSrc++;
+        if(currentSrc < sources.length) loadLib();
+        else document.getElementById('net-status').innerText = "Мережа: БЛОКОВАНО ❌ (Вимкни AdBlock)";
+    };
+    document.head.appendChild(script);
+}
+loadLib();
+
+// --- ЛОГІКА ГРИ ---
+let peer, conn, isHost = false;
+let me = { x: 2500, y: 2500, wood: 100, stone: 50, food: 100, pop: 1, nick: '', color: '#0f8' };
+let players = {}, items = [], flags = [];
+let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
+const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
 
 function startHost() {
+    if(typeof Peer === 'undefined') return alert("Бібліотека не завантажена!");
     isHost = true;
-    me.nick = document.getElementById('nick').value || "Host";
+    me.nick = document.getElementById('nick').value || 'Host';
     initPeer();
 }
 
 function startJoin() {
+    if(typeof Peer === 'undefined') return alert("Бібліотека не завантажена!");
+    let id = document.getElementById('joinID').value;
+    if(!id) return alert("Введи ID!");
     isHost = false;
-    let target = document.getElementById('joinID').value;
-    if(!target) return alert("Введи ID хоста!");
-    me.nick = document.getElementById('nick').value || "Player";
-    initPeer(target);
+    me.nick = document.getElementById('nick').value || 'Player';
+    initPeer(id);
 }
 
 function initPeer(target = null) {
-    if(typeof Peer === 'undefined') return alert("Бібліотека не завантажена. Перевір інтернет!");
     peer = new Peer();
     peer.on('open', (id) => {
-        me.id = id;
-        document.getElementById('room-info').innerText = "Твій ID: " + id;
         if(isHost) {
-            alert("КОД ДЛЯ ДРУЗІВ: " + id);
-            spawnWorld();
+            alert("ТВІЙ КОД: " + id);
+            for(let i=0; i<60; i++) items.push({x:Math.random()*5000, y:Math.random()*5000, t:Math.random()>0.5?'t':'s'});
             startGame();
         } else {
             conn = peer.connect(target);
             setupConn(conn);
         }
     });
-    peer.on('connection', (c) => setupConn(c));
+    peer.on('connection', setupConn);
 }
 
 function setupConn(c) {
     c.on('open', () => {
-        conn = c;
-        startGame();
-        setInterval(() => conn.send({type:'update', player: me}), 50);
+        conn = c; startGame();
+        setInterval(() => conn.send({type:'upd', x:me.x, y:me.y, n:me.nick}), 50);
     });
-    c.on('data', (data) => {
-        if(data.type === 'update') players[data.player.id] = data.player;
-        if(data.type === 'world') { items = data.items; flags = data.flags; buildings = data.buildings; }
+    c.on('data', (d) => {
+        if(d.type==='upd') players[d.n] = d;
+        if(d.type==='world') { items = d.items; flags = d.flags; }
     });
 }
 
@@ -115,66 +131,50 @@ function startGame() {
     document.getElementById('joy-bg').style.display = 'block';
     document.getElementById('actions').style.display = 'flex';
     if(isHost) setInterval(() => {
-        Object.values(peer.connections).forEach(slot => {
-            slot[0].send({type:'world', items, flags, buildings});
-        });
+        Object.values(peer.connections).forEach(slot => slot[0].send({type:'world', items, flags}));
     }, 1000);
     requestAnimationFrame(loop);
 }
 
-function spawnWorld() {
-    for(let i=0; i<100; i++) items.push({x: Math.random()*mapS, y: Math.random()*mapS, t: Math.random()>0.5?'t':'s'});
-}
-
-function act(type) {
-    if(type === 'mine') {
+function act(t) {
+    if(t==='mine') {
         items.forEach((it, i) => {
-            if(Math.hypot(me.x - it.x, me.y - it.y) < 100) {
-                if(it.t === 't') me.wood += 20; else me.stone += 15;
-                items.splice(i, 1); return;
+            if(Math.hypot(me.x-it.x, me.y-it.y) < 100) {
+                if(it.t==='t') me.wood+=20; else me.stone+=15;
+                items.splice(i,1); return;
             }
         });
     }
-    if(type === 'flag' && me.wood >= 50) { flags.push({x: me.x, y: me.y, owner: me.id, color: me.color}); me.wood -= 50; }
-    if(type === 'house' && me.wood >= 80 && me.stone >= 30) { buildings.push({x: me.x, y: me.y, t: 'h'}); me.wood -= 80; me.stone -= 30; me.pop += 5; }
+    if(t==='flag' && me.wood >= 50) { flags.push({x:me.x, y:me.y, c:me.color}); me.wood-=50; }
 }
 
 const jBg = document.getElementById('joy-bg'), jSt = document.getElementById('joy-stick');
 jBg.onpointerdown = e => { joy.active = true; joy.startX = e.clientX; joy.startY = e.clientY; };
 window.onpointermove = e => {
     if(!joy.active) return;
-    let dx = e.clientX - joy.startX, dy = e.clientY - joy.startY;
-    let dist = Math.min(Math.hypot(dx, dy), 40), angle = Math.atan2(dy, dx);
-    joy.x = Math.cos(angle) * (dist/40); joy.y = Math.sin(angle) * (dist/40);
-    jSt.style.transform = `translate(${joy.x*40}px, ${joy.y*40}px)`;
+    let dx = e.clientX-joy.startX, dy = e.clientY-joy.startY;
+    let dist = Math.min(Math.hypot(dx,dy), 40), ang = Math.atan2(dy,dx);
+    joy.x = Math.cos(ang)*(dist/40); joy.y = Math.sin(ang)*(dist/40);
+    jSt.style.transform = `translate(${joy.x*40}px,${joy.y*40}px)`;
 };
 window.onpointerup = () => { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; };
 
 function loop() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    if(joy.active) { me.x += joy.x * 8; me.y += joy.y * 8; }
-    ctx.save();
-    ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
-    ctx.strokeStyle = "#222"; ctx.strokeRect(0,0,mapS,mapS);
-    flags.forEach(f => {
-        ctx.fillStyle = f.color + "22"; ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
-        ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-30, 4, 30);
-    });
-    items.forEach(it => { ctx.fillStyle = it.t === 't' ? '#0f8' : '#777'; ctx.beginPath(); ctx.arc(it.x, it.y, 15, 0, 7); ctx.fill(); });
-    buildings.forEach(b => { ctx.fillStyle = "#e67e22"; ctx.fillRect(b.x-25, b.y-25, 50, 50); });
+    if(joy.active) { me.x += joy.x*7; me.y += joy.y*7; }
+    ctx.save(); ctx.translate(canvas.width/2-me.x, canvas.height/2-me.y);
+    ctx.strokeStyle="#333"; ctx.strokeRect(0,0,5000,5000);
+    flags.forEach(f => { ctx.fillStyle = f.c+"22"; ctx.beginPath(); ctx.arc(f.x,f.y,300,0,7); ctx.fill(); });
+    items.forEach(it => { ctx.fillStyle = it.t==='t'?'#0f8':'#777'; ctx.beginPath(); ctx.arc(it.x,it.y,15,0,7); ctx.fill(); });
     [me, ...Object.values(players)].forEach(p => {
-        ctx.fillStyle = p.id === me.id ? '#00ff88' : '#00d4ff';
-        ctx.beginPath(); ctx.arc(p.x, p.y, 20, 0, 7); ctx.fill();
-        ctx.fillStyle = "white"; ctx.fillText(p.nick, p.x-15, p.y-25);
+        ctx.fillStyle = p.nick===me.nick?'#0f8':'#0df'; ctx.beginPath(); ctx.arc(p.x,p.y,20,0,7); ctx.fill();
+        ctx.fillStyle="#fff"; ctx.fillText(p.nick || p.n, p.x-10, p.y-25);
     });
     ctx.restore();
-    document.getElementById('r_wood').innerText = Math.floor(me.wood);
-    document.getElementById('r_stone').innerText = Math.floor(me.stone);
-    document.getElementById('r_food').innerText = Math.floor(me.food);
-    document.getElementById('r_pop').innerText = Math.floor(me.pop);
+    document.getElementById('r_wood').innerText = me.wood;
+    document.getElementById('r_stone').innerText = me.stone;
     requestAnimationFrame(loop);
 }
 </script>
 </body>
 </html>
-
