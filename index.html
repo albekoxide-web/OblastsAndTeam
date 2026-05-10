@@ -3,227 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Pro Edition</title>
+    <title>Oblasts & Team: Offline-First Edition</title>
     
-    <!-- Подключаем Playroom SDK первым делом -->
-    <script src="https://unpkg.com"></script>
+    <!-- Используем максимально надежный источник для связи -->
+    <script src="https://cloudflare.com"></script>
 
     <style>
-        :root { --p: #00ff88; --s: #00d4ff; --bg: #0a0a0f; --glass: rgba(255,255,255,0.05); }
+        :root { --p: #00ff88; --bg: #0a0a0f; }
         body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; touch-action: none; user-select: none; }
         
-        /* ИНТЕРФЕЙС РЕСУРСОВ */
-        #hud { position: absolute; top: 20px; left: 20px; display: none; flex-direction: column; gap: 8px; z-index: 500; pointer-events: none; }
-        .res-card { background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 12px; border-left: 4px solid var(--p); display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .res-card b { font-size: 18px; }
+        /* ЛОББИ */
+        #lobby { position: absolute; inset: 0; background: #111; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .win { background: #1a1a25; padding: 30px; border-radius: 20px; text-align: center; width: 300px; border: 1px solid #333; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: #222; color: white; text-align: center; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn-host { background: var(--p); color: #000; }
+        .btn-join { background: #00d4ff; color: #000; }
 
-        /* ГОРЯЧАЯ ПАНЕЛЬ (СТРОИТЕЛЬСТВО) */
-        #hotbar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: none; gap: 12px; z-index: 600; background: rgba(0,0,0,0.6); padding: 12px; border-radius: 20px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
-        .slot { width: 65px; height: 65px; background: var(--glass); border-radius: 15px; border: 2px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; pointer-events: auto; }
-        .slot:hover { border-color: var(--p); background: rgba(0,255,136,0.1); transform: translateY(-5px); }
-        .slot span { font-size: 26px; }
-        .slot small { font-size: 9px; color: var(--p); font-weight: 900; margin-top: 2px; }
+        /* ИНТЕРФЕЙС */
+        #gui { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 5px; z-index: 500; pointer-events: none; }
+        .stat { background: rgba(0,0,0,0.8); padding: 6px 12px; border-radius: 8px; border-left: 3px solid var(--p); font-size: 14px; }
 
         /* ДЖОЙСТИК */
-        #joy-bg { position: absolute; bottom: 50px; left: 50px; width: 130px; height: 120px; background: rgba(255,255,255,0.05); border-radius: 50%; border: 2px solid rgba(255,255,255,0.1); display: none; z-index: 500; }
-        #joy-stick { position: absolute; top: 35px; left: 40px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 20px var(--p); }
+        #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; border: 1px solid #444; }
+        #joy-stick { position: absolute; top: 25px; left: 25px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; }
+
+        /* КНОПКИ ДЕЙСТВИЙ */
+        #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 15px; z-index: 600; }
+        .act-btn { width: 65px; height: 65px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; position: relative; }
+        .act-btn span { position: absolute; bottom: -18px; font-size: 8px; color: var(--p); font-weight: bold; width: 80px; text-align: center; }
 
         canvas { display: block; }
-        #loading { position: absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#000; z-index:2000; font-size:24px; letter-spacing:3px; }
     </style>
 </head>
 <body>
 
-<div id="loading">ЗАГРУЗКА ИМПЕРИИ...</div>
+<div id="lobby">
+    <div class="win">
+        <h1 style="color:var(--p)">OBLASTS</h1>
+        <input type="text" id="nick" placeholder="ТВОЙ НИК">
+        <input type="text" id="room" placeholder="КОД КОМНАТЫ">
+        <button class="btn-host" onclick="initPeer(true)">СОЗДАТЬ</button>
+        <button class="btn-join" onclick="initPeer(false)">ПРИСОЕДИНИТЬСЯ</button>
+        <p id="status" style="font-size:10px; color:#666; margin-top:10px;">Ожидание действий...</p>
+    </div>
+</div>
 
-<div id="hud">
-    <div class="res-card">🌲 <b><span id="r_wood">0</span></b></div>
-    <div class="res-card">🪨 <b><span id="r_stone">0</span></b></div>
-    <div class="res-card">🍎 <b><span id="r_food">0</span></b></div>
-    <div class="res-card">👥 <b><span id="r_pop">0</span></b></div>
-    <div class="res-card" style="border-color: #ff3e3e;">⚔️ <b><span id="r_army">0</span></b></div>
+<div id="gui">
+    <div class="stat">🌲 <span id="r_wood">0</span></div>
+    <div class="stat">🪨 <span id="r_stone">0</span></div>
+    <div class="stat">🍎 <span id="r_food">0</span></div>
+    <div class="stat">👥 <span id="r_pop">0</span></div>
 </div>
 
 <div id="joy-bg"><div id="joy-stick"></div></div>
-
-<div id="hotbar">
-    <div class="slot" onclick="act('mine')"><span>⛏️</span><small>СБОР</small></div>
-    <div class="slot" onclick="act('flag')"><span>🚩</span><small>ОБЛАСТЬ</small></div>
-    <div class="slot" onclick="act('house')"><span>🏠</span><small>ДОМ</small></div>
-    <div class="slot" onclick="act('farm')"><span>🌾</span><small>ФЕРМА</small></div>
-    <div class="slot" onclick="act('army')"><span>⚔️</span><small>АРМИЯ</small></div>
+<div id="actions">
+    <div class="act-btn" onclick="act('mine')">⛏️<span>СБОР</span></div>
+    <div class="act-btn" onclick="act('flag')">🚩<span>ОБЛАСТЬ</span></div>
+    <div class="act-btn" onclick="act('house')">🏠<span>ДОМ</span></div>
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
-// Ждем загрузку Playroom
-async function start() {
-    if (typeof Playroom === 'undefined') {
-        alert("Ошибка сети! Обнови страницу или выключи AdBlock.");
-        return;
-    }
+let peer, conn;
+let me = { id: '', nick: '', x: 2500, y: 2500, wood: 100, stone: 50, food: 100, pop: 1, color: '' };
+let players = {}, flags = [], items = [];
+let mapS = 5000;
+let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
 
-    // ЛОББИ PLAYROOM
-    await Playroom.insertCoin();
-    document.getElementById('loading').remove();
-    document.getElementById('hud').style.display = 'flex';
-    document.getElementById('hotbar').style.display = 'flex';
-    document.getElementById('joy-bg').style.display = 'block';
+function initPeer(isHost) {
+    const nick = document.getElementById('nick').value;
+    const room = document.getElementById('room').value;
+    if(!nick || !room) return alert("Заполни поля!");
 
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    const mapS = 5000;
-    
-    let me = Playroom.myPlayer();
-    let players = [];
-    let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
+    me.nick = nick;
+    me.color = `hsl(${Math.random()*360}, 75%, 55%)`;
+    document.getElementById('status').innerText = "Подключение...";
 
-    // Инициализация ресурсов и позиции
-    me.setState("pos", {x: 2500, y: 2500});
-    me.setState("res", { wood: 150, stone: 60, food: 100, army: 0, pop: 1 });
+    // Создаем ID на основе кода комнаты
+    const peerId = isHost ? "oblast-" + room : "oblast-" + room + "-" + Math.floor(Math.random()*999);
+    peer = new Peer(peerId);
 
-    // Генерация ресурсов (только хостом)
-    if (Playroom.isHost()) {
-        let items = [];
-        for(let i=0; i<150; i++){
-            let t = Math.random();
-            items.push({x: Math.random()*mapS, y: Math.random()*mapS, type: t>0.7?'t':(t>0.4?'s':'f')});
+    peer.on('open', (id) => {
+        me.id = id;
+        if(!isHost) {
+            conn = peer.connect("oblast-" + room);
+            setupConn(conn);
         }
-        Playroom.setState("worldItems", items);
-        Playroom.setState("worldBuildings", []);
-    }
-
-    Playroom.onPlayerJoin((p) => {
-        players.push(p);
-        p.onQuit(() => players = players.filter(pl => pl.id !== p.id));
+        startWorld();
     });
 
-    // Действия (кнопки)
-    window.act = function(type) {
-        let res = me.getState("res");
-        let pos = me.getState("pos");
+    peer.on('connection', (c) => {
+        setupConn(c);
+    });
 
-        if (type === 'mine') {
-            let items = Playroom.getState("worldItems") || [];
-            for(let i=0; i<items.length; i++) {
-                if(Math.hypot(pos.x - items[i].x, pos.y - items[i].y) < 100) {
-                    if(items[i].type === 't') res.wood += 30;
-                    else if(items[i].type === 's') res.stone += 20;
-                    else res.food += 40;
-                    items.splice(i, 1);
-                    Playroom.setState("worldItems", items);
-                    me.setState("res", res);
-                    return;
-                }
-            }
-        }
-        if (type === 'flag' && res.wood >= 50) {
-            build('flag', pos, res, 50, 0);
-        }
-        if (type === 'house' && res.wood >= 100 && res.stone >= 40) {
-            build('house', pos, res, 100, 40);
-        }
-        if (type === 'farm' && res.wood >= 60 && res.stone >= 80) {
-            build('farm', pos, res, 60, 80);
-        }
-        if (type === 'army' && res.food >= 60) {
-            res.army++; res.food -= 60; me.setState("res", res);
-        }
-    };
+    peer.on('error', (err) => alert("Ошибка связи: " + err.type));
+}
 
-    function build(t, p, r, cw, cs) {
-        let b = Playroom.getState("worldBuildings") || [];
-        b.push({x: p.x, y: p.y, type: t, color: me.getProfile().color.hex, owner: me.id});
-        Playroom.setState("worldBuildings", b);
-        r.wood -= cw; r.stone -= cs;
-        me.setState("res", r);
+function setupConn(c) {
+    c.on('data', (data) => {
+        if(data.type === 'sync') { players[data.player.id] = data.player; flags = data.flags; items = data.items; }
+    });
+}
+
+function startWorld() {
+    document.getElementById('lobby').style.display = 'none';
+    document.getElementById('gui').style.display = 'flex';
+    document.getElementById('joy-bg').style.display = 'block';
+    document.getElementById('actions').style.display = 'flex';
+
+    // Генерация ресурсов (только если мы первые)
+    for(let i=0; i<100; i++) {
+        items.push({x: Math.random()*mapS, y: Math.random()*mapS, type: Math.random()>0.5?'t':'s'});
     }
 
-    // Управление джойстиком
-    const jBg = document.getElementById('joy-bg'), jSt = document.getElementById('joy-stick');
-    jBg.onpointerdown = (e) => { joy.active = true; joy.startX = e.clientX; joy.startY = e.clientY; };
-    window.onpointermove = (e) => {
-        if(!joy.active) return;
-        let dx = e.clientX - joy.startX, dy = e.clientY - joy.startY;
-        let dist = Math.min(Math.hypot(dx, dy), 40), angle = Math.atan2(dy, dx);
-        joy.x = Math.cos(angle) * (dist / 40); joy.y = Math.sin(angle) * (dist / 40);
-        jSt.style.transform = `translate(${joy.x*40}px, ${joy.y*40}px)`;
-    };
-    window.onpointerup = () => { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; };
-
-    // Главный цикл
-    function loop() {
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        let pos = me.getState("pos");
-        let res = me.getState("res");
-
-        if (joy.active) {
-            pos.x += joy.x * 9; pos.y += joy.y * 9;
-            me.setState("pos", pos);
-        }
-
-        ctx.save();
-        ctx.translate(canvas.width/2 - pos.x, canvas.height/2 - pos.y);
-        
-        // Рисуем здания (флаги, дома)
-        (Playroom.getState("worldBuildings") || []).forEach(b => {
-            if(b.type === 'flag') {
-                ctx.fillStyle = b.color + "15"; ctx.beginPath(); ctx.arc(b.x, b.y, 400, 0, 7); ctx.fill();
-                ctx.fillStyle = b.color; ctx.fillRect(b.x-2, b.y-40, 4, 40); ctx.fillRect(b.x, b.y-40, 25, 15);
-            } else {
-                ctx.fillStyle = b.type==='house'?'#ff4400':'#ffcc00'; ctx.fillRect(b.x-30, b.y-30, 60, 60);
-                ctx.strokeStyle="white"; ctx.strokeRect(b.x-30, b.y-30, 60, 60);
-            }
-        });
-
-        // Рисуем ресурсы
-        (Playroom.getState("worldItems") || []).forEach(it => {
-            ctx.fillStyle = it.type==='t'?'#00ff88':(it.type==='s'?'#777':'#ffaa00');
-            ctx.beginPath(); ctx.arc(it.x, it.y, 18, 0, 7); ctx.fill();
-        });
-
-        // Рисуем игроков
-        players.forEach(p => {
-            let pPos = p.getState("pos");
-            if(!pPos) return;
-            ctx.fillStyle = p.getProfile().color.hex;
-            ctx.beginPath(); ctx.arc(pPos.x, pPos.y, 22, 0, 7); ctx.fill();
-            ctx.fillStyle = "white"; ctx.font="bold 16px sans-serif"; ctx.textAlign="center";
-            ctx.fillText(p.getProfile().name + " (⚔️"+(p.getState("res")?.army || 0)+")", pPos.x, pPos.y - 35);
-        });
-
-        ctx.restore();
-
-        // HUD Update
-        document.getElementById('r_wood').innerText = Math.floor(res.wood);
-        document.getElementById('r_stone').innerText = Math.floor(res.stone);
-        document.getElementById('r_food').innerText = Math.floor(res.food);
-        document.getElementById('r_pop').innerText = Math.floor(res.pop);
-        document.getElementById('r_army').innerText = Math.floor(res.army);
-
-        requestAnimationFrame(loop);
-    }
-    
-    // Экономика (еда/население)
     setInterval(() => {
-        let res = me.getState("res");
-        let buildings = Playroom.getState("worldBuildings") || [];
-        let myFarms = buildings.filter(b => b.owner === me.id && b.type === 'farm').length;
-        let myHouses = buildings.filter(b => b.owner === me.id && b.type === 'house').length;
-        
-        res.food += myFarms * 7;
-        if(res.food > 0) {
-            res.food -= (res.pop * 0.2 + res.army * 0.4);
-            if(res.pop < 10 + myHouses * 20) res.pop += 0.3;
-        } else { res.pop -= 0.6; res.army *= 0.8; if(res.pop < 1) res.pop = 1; }
-        me.setState("res", res);
-    }, 3000);
+        if(conn) conn.send({type: 'sync', player: me, flags: flags, items: items});
+        // Если хост, рассылаем всем (в этой упрощенной версии просто обмен)
+    }, 100);
 
     requestAnimationFrame(loop);
 }
 
-start();
+function act(type) {
+    if(type === 'mine') {
+        for(let i=0; i<items.length; i++) {
+            if(Math.hypot(me.x - items[i].x, me.y - items[i].y) < 100) {
+                if(items[i].type === 't') me.wood += 20; else me.stone += 15;
+                items.splice(i, 1); return;
+            }
+        }
+    }
+    if(type === 'flag' && me.wood >= 50) {
+        flags.push({x: me.x, y: me.y, color: me.color, owner: me.nick});
+        me.wood -= 50;
+    }
+    if(type === 'house' && me.wood >= 80) {
+        me.pop += 5; me.wood -= 80;
+    }
+}
+
+// УПРАВЛЕНИЕ
+const jBg = document.getElementById('joy-bg'), jSt = document.getElementById('joy-stick');
+jBg.onpointerdown = (e) => { joy.active = true; joy.startX = e.clientX; joy.startY = e.clientY; };
+window.onpointermove = (e) => {
+    if(!joy.active) return;
+    let dx = e.clientX - joy.startX, dy = e.clientY - joy.startY;
+    let dist = Math.min(Math.hypot(dx, dy), 35), angle = Math.atan2(dy, dx);
+    joy.x = Math.cos(angle) * (dist / 35); joy.y = Math.sin(angle) * (dist / 35);
+    jSt.style.transform = `translate(${joy.x*35}px, ${joy.y*35}px)`;
+};
+window.onpointerup = () => { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; };
+
+function loop() {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    if(joy.active) { me.x += joy.x * 8; me.y += joy.y * 8; }
+
+    ctx.save();
+    ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
+    
+    // Сетка
+    ctx.strokeStyle = "#222";
+    for(let i=0; i<=mapS; i+=200) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,mapS); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(mapS,i); ctx.stroke(); }
+
+    flags.forEach(f => {
+        ctx.fillStyle = f.color + "33"; ctx.beginPath(); ctx.arc(f.x, f.y, 350, 0, 7); ctx.fill();
+        ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-30, 4, 30);
+    });
+
+    items.forEach(it => {
+        ctx.fillStyle = it.type === 't' ? "#00ff88" : "#777";
+        ctx.beginPath(); ctx.arc(it.x, it.y, 15, 0, 7); ctx.fill();
+    });
+
+    // Рисуем меня
+    ctx.fillStyle = me.color; ctx.beginPath(); ctx.arc(me.x, me.y, 20, 0, 7); ctx.fill();
+    ctx.fillStyle = "white"; ctx.fillText(me.nick, me.x-15, me.y-30);
+
+    // Рисуем других
+    for(let id in players) {
+        let p = players[id];
+        ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 20, 0, 7); ctx.fill();
+        ctx.fillText(p.nick, p.x-15, p.y-30);
+    }
+
+    ctx.restore();
+
+    document.getElementById('r_wood').innerText = me.wood;
+    document.getElementById('r_stone').innerText = me.stone;
+    document.getElementById('r_food').innerText = me.food;
+    document.getElementById('r_pop').innerText = me.pop;
+
+    requestAnimationFrame(loop);
+}
 </script>
 </body>
 </html>
