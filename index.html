@@ -3,22 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oblasts & Team: Mega-Network</title>
+    <title>Oblasts & Team: Ultimate</title>
+    
+    <!-- ВИКОРИСТОВУЄМО ОФІЦІЙНИЙ GOOGLE CDN (НАЙСТАБІЛЬНІШИЙ) -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+
     <style>
         :root { --p: #00ff88; --s: #00d4ff; --bg: #050508; }
         body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; touch-action: none; user-select: none; }
         #lobby { position: absolute; inset: 0; background: radial-gradient(circle, #1a1a2e 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .window { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 30px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 320px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); }
+        .window { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 30px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 320px; }
         input, select { width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; border: none; background: rgba(0,0,0,0.4); color: white; outline: none; text-align: center; font-size: 16px; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; text-transform: uppercase; }
         .btn-main { background: linear-gradient(45deg, var(--p), var(--s)); color: #000; }
-        #gui { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 5px; z-index: 500; pointer-events: none; }
+        #gui { position: absolute; top: 15px; left: 15px; display: none; flex-direction: column; gap: 5px; z-index: 500; }
         .stat { background: rgba(0,0,0,0.7); padding: 6px 15px; border-radius: 10px; border-left: 4px solid var(--p); font-size: 14px; font-weight: bold; }
-        #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 110px; height: 110px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; }
-        #joy-stick { position: absolute; top: 30px; left: 30px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
+        #joy-bg { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; display: none; z-index: 600; border: 1px solid rgba(255,255,255,0.2); }
+        #joy-stick { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; background: var(--p); border-radius: 50%; box-shadow: 0 0 15px var(--p); }
         #actions { position: absolute; bottom: 30px; right: 20px; display: none; flex-direction: column; gap: 12px; z-index: 600; }
         .act-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 2px solid var(--p); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; position: relative; }
-        .act-btn span { position: absolute; bottom: -18px; font-size: 8px; color: var(--p); font-weight: bold; width: 80px; text-align: center; }
+        .act-btn span { position: absolute; bottom: -18px; font-size: 8px; color: var(--p); font-weight: bold; text-align: center; width: 80px; }
         canvas { display: block; }
     </style>
 </head>
@@ -26,10 +31,10 @@
 
 <div id="lobby">
     <div id="m-start" class="window">
-        <h1 style="color:var(--p)">OBLASTS</h1>
-        <p id="net-status" style="font-size:10px; color:#aaa;">Підключення до мереж...</p>
+        <h1 style="color:var(--p); letter-spacing:5px;">OBLASTS</h1>
+        <p id="status-text" style="font-size: 10px; color: #888;">Завантаження сервера...</p>
         <input type="text" id="nick" placeholder="ТВІЙ НІК">
-        <button class="btn btn-main" onclick="showSettings()">СТВОРИТИ МІР</button>
+        <button class="btn btn-main" onclick="showSettings()">СТВОРИТИ СВІТ</button>
         <input type="text" id="joinCode" placeholder="КОД КІМНАТИ">
         <button class="btn" style="background:#333; color:#fff" onclick="joinGame()">ПРИЄДНАТИСЯ</button>
     </div>
@@ -46,10 +51,8 @@
 </div>
 
 <div id="gui">
-    <div class="stat">🌲 <span id="r_wood">0</span></div>
-    <div class="stat">🪨 <span id="r_stone">0</span></div>
-    <div class="stat">🍎 <span id="r_food">0</span></div>
-    <div class="stat">👥 <span id="r_pop">0</span></div>
+    <div class="stat">🌲 <span id="r_wood">0</span> | 🪨 <span id="r_stone">0</span></div>
+    <div class="stat">🍎 <span id="r_food">0</span> | 👥 <span id="r_pop">0</span></div>
 </div>
 
 <div id="joy-bg"><div id="joy-stick"></div></div>
@@ -61,42 +64,6 @@
 <canvas id="game"></canvas>
 
 <script>
-// --- СИСТЕМА РОЗУМНОГО ЗАВАНТАЖЕННЯ МЕРЕЖІ ---
-const CDNs = [
-    "https://gstatic.com", // Google (Найкращий)
-    "https://cloudflare.com", // Cloudflare
-    "https://unpkg.com" // Unpkg
-];
-
-let currentCDN = 0;
-function loadFirebase() {
-    let base = CDNs[currentCDN];
-    document.getElementById('net-status').innerText = `Спроба підключення: мережа #${currentCDN + 1}...`;
-    
-    let s1 = document.createElement('script');
-    s1.src = base + "firebase-app.js";
-    s1.onload = () => {
-        let s2 = document.createElement('script');
-        s2.src = base + "firebase-database.js";
-        s2.onload = initApp;
-        s2.onerror = tryNextCDN;
-        document.head.appendChild(s2);
-    };
-    s1.onerror = tryNextCDN;
-    document.head.appendChild(s1);
-}
-
-function tryNextCDN() {
-    currentCDN++;
-    if (currentCDN < CDNs.length) {
-        loadFirebase();
-    } else {
-        alert("Всі мережі недоступні. Перевірте інтернет або вимкніть AdBlock/VPN.");
-        document.getElementById('net-status').innerText = "Помилка мережі.";
-    }
-}
-
-// --- ОСНОВНА ЛОГІКА ГРИ ---
 const firebaseConfig = {
   apiKey: "AIzaSyAxOs_OKSmIm5vv2ruW_8HGTjHK0lo-9nI",
   authDomain: "://firebaseapp.com",
@@ -113,26 +80,34 @@ let players = {}, flags = {}, items = {};
 let joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
 const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
 
-function initApp() {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-    document.getElementById('net-status').innerText = "Мережа: OK ✅";
-    document.getElementById('net-status').style.color = "#00ff88";
+window.onload = function() {
+    if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+        document.getElementById('status-text').innerText = "Сервер: Готово ✅";
+        document.getElementById('status-text').style.color = "#00ff88";
+    } else {
+        document.getElementById('status-text').innerText = "Помилка! Вимкни AdBlock.";
+        document.getElementById('status-text').style.color = "#ff4444";
+    }
+};
+
+function showSettings() { 
+    if(!db) return alert("Сервер ще не готовий!");
+    if(!document.getElementById('nick').value) return alert("ВВЕДИ НІК!");
+    document.getElementById('m-start').style.display='none'; 
+    document.getElementById('m-settings').style.display='block'; 
 }
-
-loadFirebase(); // Запускаємо мережевий двигун
-
-function showSettings() { if(!document.getElementById('nick').value) return alert("ВВЕДИ НІК!"); document.getElementById('m-start').style.display='none'; document.getElementById('m-settings').style.display='block'; }
 
 function finalizeCreate() {
     roomID = Math.random().toString(36).substring(2, 6).toUpperCase();
     mapLimit = parseInt(document.getElementById('mapSize').value);
     let res = {};
-    for(let i=0; i<120; i++) {
+    for(let i=0; i<100; i++) {
         let t = Math.random();
         res['r'+i] = { x: Math.random()*mapLimit, y: Math.random()*mapLimit, type: t>0.5?'t':'s' };
     }
-    db.ref('rooms/' + roomID).set({ settings: { limit: mapLimit }, items: res }).then(() => {
+    db.ref('rooms/'+roomID).set({ settings: { limit: mapLimit }, items: res }).then(() => {
         document.getElementById('m-settings').style.display='none';
         document.getElementById('m-code').style.display='block';
         document.getElementById('shareCode').innerText = roomID;
@@ -141,8 +116,8 @@ function finalizeCreate() {
 
 function joinGame() {
     const nick = document.getElementById('nick').value, code = document.getElementById('joinCode').value.toUpperCase();
-    if(!nick || !code || !db) return alert("Почекай або заповни поля!");
-    db.ref('rooms/' + code).once('value', s => {
+    if(!nick || !code || !db) return alert("Заповни поля!");
+    db.ref('rooms/'+code).once('value', s => {
         if(s.exists()) { roomID = code; mapLimit = s.val().settings.limit; enterWorld(); }
         else alert("КОД НЕВІРНИЙ");
     });
@@ -174,7 +149,6 @@ function act(type) {
     }
 }
 
-// Джойстик
 const jBg = document.getElementById('joy-bg'), jSt = document.getElementById('joy-stick');
 function hS(cx, cy) { joy.active = true; joy.startX = cx; joy.startY = cy; }
 function hM(cx, cy) {
@@ -185,16 +159,13 @@ function hM(cx, cy) {
 }
 function hE() { joy.active = false; joy.x = joy.y = 0; jSt.style.transform = `translate(0,0)`; }
 jBg.addEventListener('touchstart', e => hS(e.touches[0].clientX, e.touches[0].clientY));
-jBg.addEventListener('mousedown', e => hS(e.clientX, e.clientY));
 window.addEventListener('touchmove', e => hM(e.touches[0].clientX, e.touches[0].clientY));
-window.addEventListener('mousemove', e => hM(e.clientX, e.clientY));
-window.addEventListener('touchend', hE); window.addEventListener('mouseup', hE);
+window.addEventListener('touchend', hE);
 
 function loop() {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     if(joy.active) { me.x += joy.x * 8; me.y += joy.y * 8; db.ref('rooms/'+roomID+'/players/'+me.nick).set(me); }
     ctx.save(); ctx.translate(canvas.width/2 - me.x, canvas.height/2 - me.y);
-    ctx.strokeStyle="rgba(255,255,255,0.1)"; ctx.strokeRect(0,0,mapLimit,mapLimit);
     for(let id in flags) {
         let f = flags[id]; ctx.fillStyle = f.color.replace('55%)','15%)'); ctx.beginPath(); ctx.arc(f.x, f.y, 300, 0, 7); ctx.fill();
         ctx.fillStyle = f.color; ctx.fillRect(f.x-2, f.y-35, 4, 35);
@@ -205,7 +176,7 @@ function loop() {
     }
     for(let id in players) {
         let p = players[id]; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, 7); ctx.fill();
-        ctx.fillStyle = "white"; ctx.fillText(p.nick, p.x-15, p.y-25);
+        ctx.fillStyle = "white"; ctx.fillText(p.nick, p.x-10, p.y-25);
     }
     ctx.restore();
     document.getElementById('r_wood').innerText = me.wood;
